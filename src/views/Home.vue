@@ -4,7 +4,7 @@
 </template>
 
 <script lang="ts">
-import { Vue } from "vue-property-decorator";
+import Vue from "vue";
 
 
 export default class Home extends Vue {}

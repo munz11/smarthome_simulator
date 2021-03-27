@@ -15,6 +15,11 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 library.add(fas)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
+//backend service
+
+import smartHomeBackend from "./services/smartHomeBackend";
+Vue.prototype.$smartHomeBackend = new smartHomeBackend();
+
 
 
 Vue.config.productionTip = false;

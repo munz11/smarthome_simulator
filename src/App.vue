@@ -9,10 +9,14 @@
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav class="ml-auto">
+          <b-nav-item :to="{ name: 'Home' }">Home</b-nav-item>
           <b-nav-item :to="{ name: 'About' }">About</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
     </b-navbar>
+    <main role="main">
+          <router-view Home />
+    </main>
 
     <SystemStatus v-bind:systemStatus="systemStatus"/>
 
@@ -22,6 +26,7 @@
 <script>
 
 import SystemStatus from './components/widgets/SystemStatus.vue';
+import Home from './views/Home.vue';
 import axios from 'axios';
 
 export default {
@@ -35,7 +40,7 @@ export default {
     },
     methods: {
       checkStatus(){
-        axios.get("http://localhost:8080/api/v2/system/ping")
+        axios.get(this.$smartHomeBackend.getUrlPing())
              .then(res => this.systemStatus = (res.data == 'pong' ? "online" : "offline"))
              .catch(err => console.error(err));
       }

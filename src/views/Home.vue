@@ -1,12 +1,18 @@
 <template>
   <div class="home">
-    Inside home 
+    <FloorMap/>
   </div>
 </template>
 
-<script lang="ts">
-import Vue from "vue";
+<script>
+import FloorMap from '../components/FloorMap.vue' ;
+
+export default {
+  name: "Home",
+  components: {
+    FloorMap
+  },
 
 
-export default class Home extends Vue {}
+}
 </script>

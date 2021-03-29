@@ -22,7 +22,10 @@ Vue.prototype.$smartHomeBackend = new smartHomeBackend();
 
 
 
+
 Vue.config.productionTip = false;
+
+
 
 new Vue({
   router,

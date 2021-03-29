@@ -17,7 +17,6 @@
     <main role="main">
           <router-view Home />
     </main>
-
     <SystemStatus v-bind:systemStatus="systemStatus"/>
 
   </div>
@@ -25,8 +24,7 @@
 
 <script>
 
-import SystemStatus from './components/widgets/SystemStatus.vue';
-import Home from './views/Home.vue';
+import SystemStatus from './components/SystemStatus.vue';
 import axios from 'axios';
 
 export default {
@@ -49,8 +47,8 @@ export default {
       this.checkStatus();
       setInterval(() => {
           this.checkStatus();
-      }, 1000 * 15);
-    }
+      }, 1000*15);
+    },
 }
 
 </script>

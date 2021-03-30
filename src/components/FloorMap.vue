@@ -1,47 +1,77 @@
 <template>
-        <div>
+    <div>
+     <b-container fluid>
+      <b-row>
+        <nav class=" col-lg-2 d-md-block bg-light sidebar border-right p-0">
+          <div class="pt-3">
+            <b-button
+              class="ml-3"
+              @click="saveFloorPlan">Save Room Plan</b-button>
+          </div>
+        </nav>
             <tbody>
             <tr v-for="i in row" :id="'row' + '-' + i" v-bind:key="i">
             <td
-            class="unvisited"
-            v-for="j in column"
-            :id="i + '-' + j"
-            v-bind:key="j"
-            @mouseover="putWall(i + '-' + j)"
-            v-on:click.exact="hold = !hold"
-            v-bind:nodes[i][j]="id"
-            >  </td>
+                class="unvisited"
+                v-for="j in column"
+                :id="i + '-' + j"
+                v-bind:key="j"
+                @mouseover="putWall(i + '-' + j)"
+                v-on:click.exact="hold = !hold"
+                v-bind:nodes[i][j]="id"
+                v-on:click.right="addSensor(i+'-'+j)"
+                ></td>
             </tr>
             </tbody>
-        </div>
+      </b-row>
+    </b-container>
+    </div>
 </template>
 
 <script>
+
+import axios from 'axios';
 
 export default {
     name: "FloorMap",
     data(){
         return {
-            row: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
-            column: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37],
-            nodes: new Array(22).fill(null).map(() => new Array(38).fill(null)),
-            si: 11,
-            sj: 8,
-            di: 11,
-            dj: 29,
+            height: 22,
+            width: 40,
+            row: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],
+            column: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39],
+            nodes: new Array(22).fill(null).map(() => new Array(40).fill(null)),
+            collsionNodes:[],//each node will be stored like (x,y)
             hold: false,
             draw: true
         }
     },
-    methods:{
-        putWall(id) {
+    methods: {
+        putWall(id){
             if (this.hold === true && this.draw == true) {
                 let l = document.getElementById(id);
-                if(l.className != "sd"){
-                    l.setAttribute("class", "wall");
-                }
+                l.setAttribute("class", "wall");
+                this.collsionNodes.push(id)
             }
+        },
+        saveFloorPlan(){
+            //send information to the backend 
+            console.log(this.collsionNodes);
+            axios.post(this.$smartHomeBackend.getUrlRoomConfigFloorPlan(),this.collsionNodes)
+                 .then((response) => {
+                        console.log("success");
+                        console.log(response);//should make a popup..
+                        }, (error) => {
+                        console.log(error);
+                        });       
+        },
+        addSensor(id){
+            console.log("Can add a sensor at tile:");
+            console.log(id);
         }
+
+
+
     }
 
 

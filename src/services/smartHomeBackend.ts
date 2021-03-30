@@ -13,7 +13,7 @@ export default class smartHomeBackend {
     }
 
     getUrlRoomConfigFloorPlan():string{
-        return this.getUrl()+"/api/v2/roomConfig/floorPlan";
+        return this.getUrl()+"/api/v2/roomConfig/insertCollisionObjects";
     }
 
     getUrlRoomConfigSensorsDefined(): string{

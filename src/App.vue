@@ -17,7 +17,7 @@
 
 <script>
 
-import SystemStatus from './components/SystemStatus.vue';
+import SystemStatus from './components/widgets/SystemStatus.vue';
 import axios from 'axios';
 
 export default {

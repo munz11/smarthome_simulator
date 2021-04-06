@@ -1,7 +1,7 @@
 <template>
         <footer class="mb-1 mx-3 small" style="position: fixed; bottom: 0; left: 0;">
         <p>
-            <font-awesome-icon icon="circle" v-bind:class=" this.systemStatus " />
+            <font-awesome-icon icon="circle" v-bind:class="this.systemStatus" />
             {{ this.getSystemStatus() }}
         </p>
     </footer>

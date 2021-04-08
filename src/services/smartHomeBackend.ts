@@ -9,15 +9,12 @@ export default class smartHomeBackend {
     }
 
     getUrlPing():string{
-        return this.getUrl() +"/api/v2/system/ping";
+        return this.getUrl() +"/api/system/ping";
     }
 
-    getUrlRoomConfigFloorPlan():string{
-        return this.getUrl()+"/api/v2/roomConfig/insertCollisionObjects";
+    getUrlInput():string{
+        return this.getUrl()+"/api/simulation/input";
     }
 
-    getUrlRoomConfigSensorsDefined(): string{
-        return this.getUrl()+"/api/v2/roomConfig/sensorsDefined";
-    }
 
 }

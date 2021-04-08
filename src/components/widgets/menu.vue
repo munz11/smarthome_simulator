@@ -1,6 +1,6 @@
 <template>
   <div>
-    <nav class="col-lg-2 d-md-block bg-light sidebar border-right p-0">
+    <nav class="col-lg-2 d-md-block bg-light border-right p-0">
       <div class="pt-3">
         <b-button class="ml-3" @click="sendMessageToClearGrid">Clear</b-button>
       </div>
@@ -10,13 +10,14 @@
         >
       </div>
       <div class="pt-3">
-        <b-button class="ml-3">Current Sensors</b-button>
+        <b-button class="ml-3" @click="sendMessageToShowSensorList"
+          >Current Sensors</b-button
+        >
       </div>
       <div class="pt-3">
-        <b-button class="ml-3">Save</b-button>
-      </div>
-      <div class="pt-3">
-        <b-button class="ml-3">Run Simulation</b-button>
+        <b-button class="ml-3" @click="sendMessageToShowInputForm"
+          >Run Simulation</b-button
+        >
       </div>
     </nav>
   </div>
@@ -31,6 +32,12 @@ export default {
     },
     sendMessageToShowSensorForm() {
       this.$emit("showAddSensorForm");
+    },
+    sendMessageToShowInputForm() {
+      this.$emit("showInputForm");
+    },
+    sendMessageToShowSensorList() {
+      this.$emit("showSensorList");
     },
   },
 };

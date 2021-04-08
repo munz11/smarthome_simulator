@@ -20,36 +20,26 @@
                     v-model="sensorName"
                   />
                 </div>
+                <br />
                 <div class="form-group">
-                  <label>Type:</label>
-                  <br />
-                  <input
-                    type="radio"
-                    id="passive"
-                    value="Passive"
-                    v-model="sensorType"
-                  />
-                  <label for="passive">Passive</label>
-                  <br />
-                  <input
-                    type="radio"
-                    id="active"
-                    value="Active"
-                    v-model="sensorType"
-                  />
-                  <label for="active">Active</label>
-                  <br />
-                </div>
-                <div class="form-group">
-                  <label>Placement:</label>
+                  <label>Positions:</label>
                   <input
                     type="text"
                     class="form-control"
-                    v-model="sensorPlacement"
+                    v-model="sensorPosition"
                     placeholder="e.g 12-31,12-32,11-31"
                   />
                 </div>
                 <br />
+                <div class="form-group">
+                  <label>Trigger Area:</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="sensorTriggerArea"
+                    placeholder="e.g 12-31,12-32,11-31"
+                  />
+                </div>
                 <div align="center">
                   <input
                     type="button"
@@ -75,8 +65,8 @@ export default {
     return {
       sensorFormTitle: "Add a New Sensor",
       sensorName: "",
-      sensorType: "",
-      sensorPlacement: "",
+      sensorPosition: "",
+      sensorTriggerArea: "",
       actionButton: "Submit",
     };
   },
@@ -88,14 +78,15 @@ export default {
       let sensor = {
         id: uuidv4(),
         name: this.sensorName,
-        type: this.sensorType,
-        placement: this.sensorPlacement,
+        position: this.sensorPosition,
+        sensorTriggerArea: this.sensorTriggerArea,
       };
       this.$root.$emit("NewSensorHasBeenSubmitted", sensor);
       this.closeAddSensor();
       this.sensorName = "";
       this.sensorType = "";
-      this.sensorPlacement = "";
+      this.sensorPosition = "";
+      this.sensorTriggerArea = "";
     },
   },
 };
@@ -103,19 +94,19 @@ export default {
 
 <style>
 .modal-mask {
-     position: fixed;
-     z-index: 9998;
-     top: 0;
-     left: 0;
-     width: 100%;
-     height: 100%;
-     background-color: rgba(0, 0, 0, .5);
-     display: table;
-     transition: opacity .3s ease;
-   }
+  position: fixed;
+  z-index: 9998;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: table;
+  transition: opacity 0.3s ease;
+}
 .modal-wrapper {
-     display: table-cell;
-     vertical-align: middle;
-   }
+  display: table-cell;
+  vertical-align: middle;
+}
 </style>
 

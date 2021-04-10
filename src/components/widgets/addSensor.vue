@@ -76,10 +76,10 @@ export default {
     },
     submitSensorInformation() {
       let sensor = {
-        id: uuidv4(),
-        name: this.sensorName,
-        position: this.sensorPosition,
-        sensorTriggerArea: this.sensorTriggerArea,
+        "id": uuidv4(),
+        "name": this.sensorName,
+        "positions": this.sensorPosition,
+        "triggerArea": this.sensorTriggerArea,
       };
       this.$root.$emit("NewSensorHasBeenSubmitted", sensor);
       this.closeAddSensor();

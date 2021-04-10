@@ -48,7 +48,7 @@ export default {
         }
     },
     putSensor(sensor){
-        let sensorPositions = sensor.position.split(",");
+        let sensorPositions = sensor.positions.split(",");
         //this sensor object needs to be saved somewhere
         for(let i=0; i < sensorPositions.length; i++){
                 let l = document.getElementById(sensorPositions[i]);

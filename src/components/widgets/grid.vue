@@ -18,6 +18,7 @@
 <script>
 
 import position from '@/models/position';
+import wall from '@/models/wall';
 
 export default {
   name: "Grid",
@@ -39,7 +40,7 @@ export default {
         l.setAttribute("class", "wall");
         this.occupiedNodes.push({"id":id});//the object 1 is a wall
         let coords = id.split("-");
-        this.$store.commit("addWall",new position(parseInt(coords[0]),parseInt(coords[1])));
+        this.$store.commit("addWall",new wall(new position(parseInt(coords[0]),parseInt(coords[1]))));
       }
     },
     clearGrid(){//update when state check is in place

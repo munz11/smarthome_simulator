@@ -2,14 +2,14 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import sensor from '../models/sensor';
 import position from '../models/position';
-
+import wall from '../models/wall';
 Vue.use(Vuex);
 
 export default new Vuex.Store({
     state: {
         agent: new position(0, 0),//default
         sensors: Array<sensor>(),
-        walls: Array<position>()
+        walls: Array<wall>()
     },
 
     mutations: {
@@ -17,7 +17,7 @@ export default new Vuex.Store({
             state.sensors.push(newSensor);
 
         },
-        addWall(state, newWall: position) {
+        addWall(state, newWall: wall) {
             state.walls.push(newWall);
         },
         updateAgent(state, newAgentPosition: position) {
@@ -25,7 +25,7 @@ export default new Vuex.Store({
         },
         clearAllSensorAndWallInfo(state) {
             state.sensors = Array<sensor>();
-            state.walls = Array<position>();
+            state.walls = Array<wall>();
         }
     }
     /*,

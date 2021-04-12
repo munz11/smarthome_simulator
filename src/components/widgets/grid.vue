@@ -17,6 +17,7 @@
 
 <script>
 
+import position from '@/models/position';
 
 export default {
   name: "Grid",
@@ -36,7 +37,9 @@ export default {
       if (this.hold === true && this.draw == true) {
         let l = document.getElementById(id);
         l.setAttribute("class", "wall");
-        this.occupiedNodes.push({"id":id,"object":1});//the object 1 is a wall
+        this.occupiedNodes.push({"id":id});//the object 1 is a wall
+        let coords = id.split("-");
+        this.$store.commit("addWall",new position(parseInt(coords[0]),parseInt(coords[1])));
       }
     },
     clearGrid(){//update when state check is in place
@@ -46,15 +49,18 @@ export default {
             let l = document.getElementById(id);
             l.setAttribute("class","unvisited");
         }
+        this.$store.commit("clearAllSensorAndWallInfo");
     },
     putSensor(sensor){
-        let sensorPositions = sensor.positions.split(",");
         //this sensor object needs to be saved somewhere
-        for(let i=0; i < sensorPositions.length; i++){
-                let l = document.getElementById(sensorPositions[i]);
+        for(let i=0; i < sensor.positions.length; i++){
+                let ID = sensor.positions[i].x.toString()+"-"+sensor.positions[i].y.toString();
+                let l = document.getElementById(ID);
                 l.setAttribute("class", "sensor");
-                this.occupiedNodes.push({"id":sensorPositions[i],"object":sensor.id});//the object at this position is the sensor 
+                this.occupiedNodes.push({"id":ID});//the object at this position is the sensor 
             }
+        this.$store.commit('addSensor',sensor);
+        
     }
   },
   mounted(){

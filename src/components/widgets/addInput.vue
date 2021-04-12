@@ -68,15 +68,35 @@ export default {
       this.$emit("closeAddInput");
     },
     submitInputInformation() {
-      axios.post(this.$smartHomeBackend.getUrlInput(), this.activties).then(
-        (response) => {
-            console.log(response) //should make a popup..
-            this.responseFromSubmission="Request sent to the server";
+      //roomconfig part -> will need to move this out of here on refactoring to run simulation or some other part
+      let roomConfig = {
+        "width":41,
+        "height":22,
+        "agent":this.$store.state.agent,
+        "sensors":this.$store.state.sensors,
+        "walls":this.$store.state.walls
+      }
+      axios.post(this.$smartHomeBackend.getUrlRoomConfig(),roomConfig).then(
+        (response)=>{
+          console.log(response);
+          axios.post(this.$smartHomeBackend.getUrlInput(),this.activties).then(
+            (response)=>{
+              console.log(response.data);
+              if (response.data=="consumed"){
+                this.responseFromSubmission="Request sent to the server";
+              } else{
+                this.responseFromSubmission=response.data;
+              }
+            },
+            (error) =>{
+              this.responseFromSubmission=error;
+            }
+          );
         },
-        (error) => {
+        (error) =>{
           this.responseFromSubmission=error;
         }
-      );
+      )
       this.submitted=true;
     },
   },

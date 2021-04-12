@@ -12,7 +12,15 @@
                 </button>
               </div>
               <div class="modal-body">
-                  add list of sensors here 
+                <ol class="list-group">
+                  <li
+                    class="list-group-item"
+                    v-for="sensor of SensorLists"
+                    :key="sensor.id"
+                  >
+                    {{ sensor.name }}
+                  </li>
+                </ol>
               </div>
             </div>
           </div>
@@ -23,13 +31,17 @@
 </template>
 
 <script>
-
 export default {
-    name: "SensorList",
-    methods: {
-        closeSensorList(){
-            this.$emit("closeSensorList");
-        }
+  name: "SensorList",
+  data () {
+    return{
+      SensorLists: this.$store.state.sensors
     }
-}
+  },
+  methods: {
+    closeSensorList() {
+      this.$emit("closeSensorList");
+    }
+  }
+};
 </script>

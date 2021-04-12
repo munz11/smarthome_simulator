@@ -76,14 +76,17 @@ export default {
         "sensors":this.$store.state.sensors,
         "walls":this.$store.state.walls
       }
+      let input ={
+        "input":this.activties
+      }
       console.log(roomConfig);
       axios.post(this.$smartHomeBackend.getUrlRoomConfig(),roomConfig).then(
         (response)=>{
           console.log(response);
-          axios.post(this.$smartHomeBackend.getUrlInput(),this.activties).then(
+          axios.post(this.$smartHomeBackend.getUrlInput(),input).then(
             (response2)=>{
               console.log(response2);
-              console.log(this.activties);
+              console.log(input);
               if (response2.data=="consumed"){
                 this.responseFromSubmission="Request sent to the server";
               } else{

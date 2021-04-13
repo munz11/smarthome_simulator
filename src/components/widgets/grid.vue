@@ -62,9 +62,30 @@ export default {
             }
         this.$store.commit('addSensor',sensor);
         
+    },
+    updateGridToStore(){
+      let walls = this.$store.state.walls;
+      for(let i=0; i<walls.length; i++){
+        let position = walls[i].position;
+        let id = position.x.toString() + "-" + position.y.toString();
+        let l = document.getElementById(id);
+        l.setAttribute("class", "wall");
+        this.occupiedNodes.push({"id":id});
+      }
+      let sensors = this.$store.state.sensors;
+      for(let i=0; i<sensors.length;i++){
+        let positions = sensors[i].positions;
+        for(let j=0;j<positions.length;j++){
+          let id = positions[j].x.toString()+"-"+positions[j].y.toString();
+          let l = document.getElementById(id);
+          l.setAttribute("class","sensor");
+          this.occupiedNodes.push({"id":id});
+        }
+      }
     }
   },
   mounted(){
+      this.updateGridToStore();
       //listen to clear grid
       this.$root.$on('clearGid',()=>{
         this.clearGrid();

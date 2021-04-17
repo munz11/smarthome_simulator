@@ -20,9 +20,14 @@ Vue.component("font-awesome-icon", FontAwesomeIcon);
 
 import smartHomeBackend from "./services/smartHomeBackend";
 
-import vuetify from "./plugins/vuetify";
 Vue.prototype.$smartHomeBackend = new smartHomeBackend();
 
+//tool tip
+import Tooltip from "vue-directive-tooltip";
+import "vue-directive-tooltip/dist/vueDirectiveTooltip.css";
+Vue.use(Tooltip);
+
+import vuetify from "./plugins/vuetify";
 Vue.config.productionTip = false;
 
 new Vue({

@@ -9,6 +9,7 @@
           v-bind:key="j"
           @mouseover="putWall(i + '-' + j)"
           v-on:click.exact="hold = !hold"
+          v-on:dblclick="handleKeyDown"
         ></td>
       </tr>
     </tbody>
@@ -30,18 +31,28 @@ export default {
       column: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40],
       occupiedNodes:[],//this needs to be removed or updated when state check is in place 
       hold: false,
-      draw: true
+      draw: true,
+      drawSensor: false,
+      storeDrawSensorIDs: []
     };
   },
   methods: {
     putWall(id) {
-      if (this.hold === true && this.draw == true) {
+
+      if (this.hold === true && this.draw == true && !this.drawSensor) {
         let l = document.getElementById(id);
         l.setAttribute("class", "wall");
         this.occupiedNodes.push({"id":id});//the object 1 is a wall
         let coords = id.split("-");
         this.$store.commit("addWall",new wall(new position(parseInt(coords[0]),parseInt(coords[1]))));
+      }else if( this.hold === true && this.draw == true && this.drawSensor){
+       this.drawSensorPositions(id);
       }
+    },
+    drawSensorPositions(id){
+      this.storeDrawSensorIDs.push(id);
+      let l = document.getElementById(id);
+      l.setAttribute("class", "sensor");
     },
     clearGrid(){//update when state check is in place
         //need to reset all the data on the grid
@@ -82,6 +93,22 @@ export default {
           this.occupiedNodes.push({"id":id});
         }
       }
+    },
+    handleKeyDown(){
+      if(this.hold === true && this.draw == true && this.drawSensor){
+      this.$root.$emit("SensorPositionInfo",this.storeDrawSensorIDs);
+      console.log(this.storeDrawSensorIDs);
+      this.drawSensor = false;
+      for(let j=0; j<this.storeDrawSensorIDs.length;j++){
+        let id = this.storeDrawSensorIDs[j]
+        let l = document.getElementById(id);
+        l.setAttribute("class","unvisited");
+      }
+      this.storeDrawSensorIDs=[];
+      this.$emit("showAddSensorForm");
+      }
+
+
     }
   },
   mounted(){
@@ -93,6 +120,9 @@ export default {
       this.$root.$on('NewSensorHasBeenSubmitted',(sensor)=>{
         this.putSensor(sensor);
       });
+      this.$root.$on('DrawSensorOnGrid',()=>{
+        this.drawSensor = true;
+      })
   }
 };
 </script>

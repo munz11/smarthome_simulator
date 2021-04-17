@@ -23,12 +23,19 @@
                 <br />
                 <div class="form-group">
                   <label>Positions:</label>
+                  <div v-if="getPositions">
+                  <button type="button" class="btn" @click="triggerAddSensorPositionEvents">
+                    Draw sensor on the grid 
+                  </button>
+                  </div>
+                  {{positions}}
+                  <!--
                   <input
                     type="text"
                     class="form-control"
                     v-model="sensorPosition"
                     placeholder="e.g 12-31,12-32,11-31"
-                  />
+                  />-->
                 </div>
                 <br />
                 <div class="form-group">
@@ -66,10 +73,12 @@ export default {
   data() {
     return {
       sensorFormTitle: "Add a New Sensor",
-      sensorName: "",
-      sensorPosition: "",
-      sensorTriggerArea: "",
+      sensorName: sessionStorage.getItem("sensorName")||"",
+      sensorPosition: sessionStorage.getItem("sensorPosition")||"",
+      sensorTriggerArea: sessionStorage.getItem("sensorTriggerArea")||"",
       actionButton: "Submit",
+      getPositions: sessionStorage.getItem("getPositions")||true,
+      positions:sessionStorage.getItem("positions")||""
     };
   },
   methods: {
@@ -91,17 +100,44 @@ export default {
       let newSensor = new sensor(
         uuidv4(),
         this.sensorName,
-        this.getListPositions(this.sensorPosition),
+        this.getListPositions(this.positions),//this.sensorPosition),
         this.getListPositions(this.sensorTriggerArea)
       );
       this.$root.$emit("NewSensorHasBeenSubmitted", newSensor);
       this.closeAddSensor();
       this.sensorName = "";
+      sessionStorage.setItem("sensorName","");
       this.sensorType = "";
+      sessionStorage.setItem("sensorType","");
       this.sensorPosition = "";
+      sessionStorage.setItem("sensorPosition","");
       this.sensorTriggerArea = "";
+      sessionStorage.setItem("sensorTriggerArea","");
+      this.getPositions = true;
+      sessionStorage.setItem("getPositions",true);
+      this.positions="";
+      sessionStorage.setItem("positions","");
     },
+    triggerAddSensorPositionEvents(){
+      sessionStorage.setItem("sensorName",this.sensorName);
+      sessionStorage.setItem("sensorType",this.sensorType);
+      sessionStorage.setItem("sensorTriggerArea",this.sensorTriggerArea);
+      this.$root.$emit("DrawSensorOnGrid");
+      this.$emit("closeAddSensorForm");
+    },
+    sensorPositions(positions){
+      this.positions=positions.join(",");
+      sessionStorage.setItem("positions",this.positions)
+      console.log(this.positions);
+      this.getPositions = false;
+      sessionStorage.setItem("getPostions",false)
+    }
   },
+  mounted(){
+    this.$root.$on('SensorPositionInfo',(Positions)=>{
+        this.sensorPositions(Positions);
+      });
+  }
 };
 </script>
 

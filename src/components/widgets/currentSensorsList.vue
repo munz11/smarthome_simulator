@@ -33,15 +33,15 @@
 <script>
 export default {
   name: "SensorList",
-  data () {
-    return{
-      SensorLists: this.$store.state.sensors
-    }
+  data() {
+    return {
+      SensorLists: this.$store.state.sensors,
+    };
   },
   methods: {
     closeSensorList() {
       this.$emit("closeSensorList");
-    }
-  }
+    },
+  },
 };
 </script>

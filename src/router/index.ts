@@ -17,23 +17,23 @@ const routes: Array<RouteConfig> = [
   {
     path: "/FloorPlan",
     name: "FloorPlan",
-    component: FloorPlan
+    component: FloorPlan,
   },
   {
     path: "/Sensors",
     name: "Sensors",
-    component: Sensors
+    component: Sensors,
   },
   {
     path: "/Sensors/Add",
     name: "AddSensor",
-    component: SensorAdd
+    component: SensorAdd,
   },
   {
     path: "/Simulation",
     name: "Simulation",
-    component: Simulation
-  }
+    component: Simulation,
+  },
 ];
 
 const router = new VueRouter({

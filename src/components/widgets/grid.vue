@@ -17,9 +17,8 @@
 </template>
 
 <script>
-
-import position from '@/models/position';
-import wall from '@/models/wall';
+import position from "@/models/position";
+import wall from "@/models/wall";
 
 export default {
   name: "Grid",
@@ -27,103 +26,171 @@ export default {
     return {
       height: 22,
       width: 41,
-      row: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],
-      column: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40],
-      occupiedNodes:[],//this needs to be removed or updated when state check is in place 
+      row: [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+      ],
+      column: [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+      ],
+      occupiedNodes: [], //this needs to be removed or updated when state check is in place
       hold: false,
       draw: true,
       drawSensor: false,
-      storeDrawSensorIDs: []
+      storeDrawSensorIDs: [],
     };
   },
   methods: {
     putWall(id) {
-
       if (this.hold === true && this.draw == true && !this.drawSensor) {
         let l = document.getElementById(id);
         l.setAttribute("class", "wall");
-        this.occupiedNodes.push({"id":id});//the object 1 is a wall
+        this.occupiedNodes.push({ id: id }); //the object 1 is a wall
         let coords = id.split("-");
-        this.$store.commit("addWall",new wall(new position(parseInt(coords[0]),parseInt(coords[1]))));
-      }else if( this.hold === true && this.draw == true && this.drawSensor){
-       this.drawSensorPositions(id);
+        this.$store.commit(
+          "addWall",
+          new wall(new position(parseInt(coords[0]), parseInt(coords[1])))
+        );
+      } else if (this.hold === true && this.draw == true && this.drawSensor) {
+        this.drawSensorPositions(id);
       }
     },
-    drawSensorPositions(id){
+    drawSensorPositions(id) {
       this.storeDrawSensorIDs.push(id);
       let l = document.getElementById(id);
       l.setAttribute("class", "sensor");
     },
-    clearGrid(){//update when state check is in place
-        //need to reset all the data on the grid
-        while(this.occupiedNodes.length!==0){
-            let id = this.occupiedNodes.pop().id;
-            let l = document.getElementById(id);
-            l.setAttribute("class","unvisited");
-        }
-        this.$store.commit("clearAllSensorAndWallInfo");
+    clearGrid() {
+      //update when state check is in place
+      //need to reset all the data on the grid
+      while (this.occupiedNodes.length !== 0) {
+        let id = this.occupiedNodes.pop().id;
+        let l = document.getElementById(id);
+        l.setAttribute("class", "unvisited");
+      }
+      this.$store.commit("clearAllSensorAndWallInfo");
     },
-    putSensor(sensor){
-        //this sensor object needs to be saved somewhere
-        for(let i=0; i < sensor.positions.length; i++){
-                let ID = sensor.positions[i].x.toString()+"-"+sensor.positions[i].y.toString();
-                let l = document.getElementById(ID);
-                l.setAttribute("class", "sensor");
-                this.occupiedNodes.push({"id":ID});//the object at this position is the sensor 
-            }
-        this.$store.commit('addSensor',sensor);
-        
+    putSensor(sensor) {
+      //this sensor object needs to be saved somewhere
+      for (let i = 0; i < sensor.positions.length; i++) {
+        let ID =
+          sensor.positions[i].x.toString() +
+          "-" +
+          sensor.positions[i].y.toString();
+        let l = document.getElementById(ID);
+        l.setAttribute("class", "sensor");
+        this.occupiedNodes.push({ id: ID }); //the object at this position is the sensor
+      }
+      this.$store.commit("addSensor", sensor);
     },
-    updateGridToStore(){
+    updateGridToStore() {
       let walls = this.$store.state.walls;
-      for(let i=0; i<walls.length; i++){
+      for (let i = 0; i < walls.length; i++) {
         let position = walls[i].position;
         let id = position.x.toString() + "-" + position.y.toString();
         let l = document.getElementById(id);
         l.setAttribute("class", "wall");
-        this.occupiedNodes.push({"id":id});
+        this.occupiedNodes.push({ id: id });
       }
       let sensors = this.$store.state.sensors;
-      for(let i=0; i<sensors.length;i++){
+      for (let i = 0; i < sensors.length; i++) {
         let positions = sensors[i].positions;
-        for(let j=0;j<positions.length;j++){
-          let id = positions[j].x.toString()+"-"+positions[j].y.toString();
+        for (let j = 0; j < positions.length; j++) {
+          let id = positions[j].x.toString() + "-" + positions[j].y.toString();
           let l = document.getElementById(id);
-          l.setAttribute("class","sensor");
-          this.occupiedNodes.push({"id":id});
+          l.setAttribute("class", "sensor");
+          this.occupiedNodes.push({ id: id });
         }
       }
     },
-    handleKeyDown(){
-      if(this.hold === true && this.draw == true && this.drawSensor){
-      this.$root.$emit("SensorPositionInfo",this.storeDrawSensorIDs);
-      console.log(this.storeDrawSensorIDs);
-      this.drawSensor = false;
-      for(let j=0; j<this.storeDrawSensorIDs.length;j++){
-        let id = this.storeDrawSensorIDs[j]
-        let l = document.getElementById(id);
-        l.setAttribute("class","unvisited");
+    handleKeyDown() {
+      if (this.hold === true && this.draw == true && this.drawSensor) {
+        this.$root.$emit("SensorPositionInfo", this.storeDrawSensorIDs);
+        console.log(this.storeDrawSensorIDs);
+        this.drawSensor = false;
+        for (let j = 0; j < this.storeDrawSensorIDs.length; j++) {
+          let id = this.storeDrawSensorIDs[j];
+          let l = document.getElementById(id);
+          l.setAttribute("class", "unvisited");
+        }
+        this.storeDrawSensorIDs = [];
+        this.$emit("showAddSensorForm");
       }
-      this.storeDrawSensorIDs=[];
-      this.$emit("showAddSensorForm");
-      }
-
-
-    }
+    },
   },
-  mounted(){
-      this.updateGridToStore();
-      //listen to clear grid
-      this.$root.$on('clearGid',()=>{
-        this.clearGrid();
-      });
-      this.$root.$on('NewSensorHasBeenSubmitted',(sensor)=>{
-        this.putSensor(sensor);
-      });
-      this.$root.$on('DrawSensorOnGrid',()=>{
-        this.drawSensor = true;
-      })
-  }
+  mounted() {
+    this.updateGridToStore();
+    //listen to clear grid
+    this.$root.$on("clearGid", () => {
+      this.clearGrid();
+    });
+    this.$root.$on("NewSensorHasBeenSubmitted", (sensor) => {
+      this.putSensor(sensor);
+    });
+    this.$root.$on("DrawSensorOnGrid", () => {
+      this.drawSensor = true;
+    });
+  },
 };
 </script>
 <style>

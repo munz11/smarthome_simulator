@@ -6,9 +6,7 @@
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
-                <h4 class="modal-title">
-                    Add the activities
-                </h4>
+                <h4 class="modal-title">Add the activities</h4>
                 <button type="button" class="close" @click="closeAddInput">
                   <span aria-hidden="true">&times;</span>
                 </button>
@@ -17,13 +15,13 @@
                 <div v-if="!submitted">
                   <b-container fluid>
                     <b-row>
-                        <b-form-textarea
-                          id="activities"
-                          placeholder="e.g: goto(12,32);interact(light1);wait(1000)"
-                          rows="2"
-                          max-rows="30"
-                          v-model="activties"
-                        />
+                      <b-form-textarea
+                        id="activities"
+                        placeholder="e.g: goto(12,32);interact(light1);wait(1000)"
+                        rows="2"
+                        max-rows="30"
+                        v-model="activties"
+                      />
                     </b-row>
                   </b-container>
                   <br />
@@ -38,7 +36,7 @@
                 </div>
                 <div v-if="submitted">
                   <p class="modal-body">
-                      {{responseFromSubmission}}
+                    {{ responseFromSubmission }}
                   </p>
                 </div>
               </div>
@@ -60,7 +58,7 @@ export default {
       activties: "",
       actionButton: "Submit",
       submitted: false,
-      responseFromSubmission:""
+      responseFromSubmission: "",
     };
   },
   methods: {
@@ -70,45 +68,43 @@ export default {
     submitInputInformation() {
       //roomconfig part -> will need to move this out of here on refactoring to run simulation or some other part
       let roomConfig = {
-        "width":41,
-        "height":22,
-        "agent":this.$store.state.agent,
-        "sensors":this.$store.state.sensors,
-        "walls":this.$store.state.walls
-      }
-      let input ={
-        "input":this.activties
-      }
+        width: 41,
+        height: 22,
+        agent: this.$store.state.agent,
+        sensors: this.$store.state.sensors,
+        walls: this.$store.state.walls,
+      };
+      let input = {
+        input: this.activties,
+      };
       console.log(roomConfig);
-      axios.post(this.$smartHomeBackend.getUrlRoomConfig(),roomConfig).then(
-        (response)=>{
+      axios.post(this.$smartHomeBackend.getUrlRoomConfig(), roomConfig).then(
+        (response) => {
           console.log(response);
-          axios.post(this.$smartHomeBackend.getUrlInput(),input).then(
-            (response2)=>{
+          axios.post(this.$smartHomeBackend.getUrlInput(), input).then(
+            (response2) => {
               console.log(response2);
               console.log(input);
-              if (response2.data=="consumed"){
-                this.responseFromSubmission="Request sent to the server";
-              } else{
-                this.responseFromSubmission=response2.data;
+              if (response2.data == "consumed") {
+                this.responseFromSubmission = "Request sent to the server";
+              } else {
+                this.responseFromSubmission = response2.data;
               }
             },
-            (error) =>{
-              this.responseFromSubmission=error;
+            (error) => {
+              this.responseFromSubmission = error;
             }
           );
         },
-        (error) =>{
-          this.responseFromSubmission=error;
+        (error) => {
+          this.responseFromSubmission = error;
         }
-      )
-      this.submitted=true;
+      );
+      this.submitted = true;
     },
   },
 };
 </script>
-
-
 
 <style>
 .modal-mask {

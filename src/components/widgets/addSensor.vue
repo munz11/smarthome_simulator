@@ -24,11 +24,15 @@
                 <div class="form-group">
                   <label>Positions:</label>
                   <div v-if="getPositions">
-                  <button type="button" class="btn" @click="triggerAddSensorPositionEvents">
-                    Draw sensor on the grid 
-                  </button>
+                    <button
+                      type="button"
+                      class="btn"
+                      @click="triggerAddSensorPositionEvents"
+                    >
+                      Draw sensor on the grid
+                    </button>
                   </div>
-                  {{positions}}
+                  {{ positions }}
                   <!--
                   <input
                     type="text"
@@ -73,12 +77,12 @@ export default {
   data() {
     return {
       sensorFormTitle: "Add a New Sensor",
-      sensorName: sessionStorage.getItem("sensorName")||"",
-      sensorPosition: sessionStorage.getItem("sensorPosition")||"",
-      sensorTriggerArea: sessionStorage.getItem("sensorTriggerArea")||"",
+      sensorName: sessionStorage.getItem("sensorName") || "",
+      sensorPosition: sessionStorage.getItem("sensorPosition") || "",
+      sensorTriggerArea: sessionStorage.getItem("sensorTriggerArea") || "",
       actionButton: "Submit",
-      getPositions: sessionStorage.getItem("getPositions")||true,
-      positions:sessionStorage.getItem("positions")||""
+      getPositions: sessionStorage.getItem("getPositions") || true,
+      positions: sessionStorage.getItem("positions") || "",
     };
   },
   methods: {
@@ -100,44 +104,44 @@ export default {
       let newSensor = new sensor(
         uuidv4(),
         this.sensorName,
-        this.getListPositions(this.positions),//this.sensorPosition),
+        this.getListPositions(this.positions), //this.sensorPosition),
         this.getListPositions(this.sensorTriggerArea)
       );
       this.$root.$emit("NewSensorHasBeenSubmitted", newSensor);
       this.closeAddSensor();
       this.sensorName = "";
-      sessionStorage.setItem("sensorName","");
+      sessionStorage.setItem("sensorName", "");
       this.sensorType = "";
-      sessionStorage.setItem("sensorType","");
+      sessionStorage.setItem("sensorType", "");
       this.sensorPosition = "";
-      sessionStorage.setItem("sensorPosition","");
+      sessionStorage.setItem("sensorPosition", "");
       this.sensorTriggerArea = "";
-      sessionStorage.setItem("sensorTriggerArea","");
+      sessionStorage.setItem("sensorTriggerArea", "");
       this.getPositions = true;
-      sessionStorage.setItem("getPositions",true);
-      this.positions="";
-      sessionStorage.setItem("positions","");
+      sessionStorage.setItem("getPositions", true);
+      this.positions = "";
+      sessionStorage.setItem("positions", "");
     },
-    triggerAddSensorPositionEvents(){
-      sessionStorage.setItem("sensorName",this.sensorName);
-      sessionStorage.setItem("sensorType",this.sensorType);
-      sessionStorage.setItem("sensorTriggerArea",this.sensorTriggerArea);
+    triggerAddSensorPositionEvents() {
+      sessionStorage.setItem("sensorName", this.sensorName);
+      sessionStorage.setItem("sensorType", this.sensorType);
+      sessionStorage.setItem("sensorTriggerArea", this.sensorTriggerArea);
       this.$root.$emit("DrawSensorOnGrid");
       this.$emit("closeAddSensorForm");
     },
-    sensorPositions(positions){
-      this.positions=positions.join(",");
-      sessionStorage.setItem("positions",this.positions)
+    sensorPositions(positions) {
+      this.positions = positions.join(",");
+      sessionStorage.setItem("positions", this.positions);
       console.log(this.positions);
       this.getPositions = false;
-      sessionStorage.setItem("getPostions",false)
-    }
+      sessionStorage.setItem("getPostions", false);
+    },
   },
-  mounted(){
-    this.$root.$on('SensorPositionInfo',(Positions)=>{
-        this.sensorPositions(Positions);
-      });
-  }
+  mounted() {
+    this.$root.$on("SensorPositionInfo", (Positions) => {
+      this.sensorPositions(Positions);
+    });
+  },
 };
 </script>
 
@@ -158,4 +162,3 @@ export default {
   vertical-align: middle;
 }
 </style>
-

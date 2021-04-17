@@ -3,10 +3,7 @@
     <b-container fluid>
       <p>At Sensors</p>
       <div class="pt-3">
-        <b-link class="ml-3" 
-        :to="{ name: 'AddSensor'}"
-          >Add Sensor</b-link
-        >
+        <b-link class="ml-3" :to="{ name: 'AddSensor' }">Add Sensor</b-link>
       </div>
     </b-container>
   </div>

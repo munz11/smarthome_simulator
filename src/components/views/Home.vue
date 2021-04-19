@@ -43,7 +43,7 @@ export default {
   },
   methods: {
     submitFloorPlanInfo(){
-      this.$store.commit("updateFloorPlanDetails",new floorPlanDetails(parseInt(this.width),parseInt(this.height),parseInt(this.tileSideLength)));
+      this.$store.commit("updateFloorPlanDetails",new floorPlanDetails(parseInt(this.height),parseInt(this.width),parseInt(this.tileSideLength)));
 
       this.$router.push({ name: 'FloorPlan' })
     }

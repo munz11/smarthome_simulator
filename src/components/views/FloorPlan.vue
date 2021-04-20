@@ -3,7 +3,7 @@
     <b-container fluid>
       <b-row>
       <Menu />
-      <Grid v-bind:widthNodes="widthNodes" v-bind:heightNodes="heightNodes" v-bind:objectBeingAdded="objectBeingAdded" />
+      <Grid v-bind:widthNodes="widthNodes" v-bind:heightNodes="heightNodes" />
       </b-row>
     </b-container>
   </div>
@@ -19,8 +19,7 @@ export default {
   data() {
     return {
       widthNodes: [],
-      heightNodes: [],
-      objectBeingAdded: "wall"
+      heightNodes: []
     };
   },
   created() {

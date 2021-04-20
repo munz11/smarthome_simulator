@@ -31,20 +31,13 @@ export default new Vuex.Store({
       state.floorPlanDetails=newFloorPlan;
       sessionStorage.setItem("floorPlanDetails", JSON.stringify(state.floorPlanDetails));
     },
-    clearAllSensorAndWallInfo(state) {
+    clearAllInfoOnGrid(state) {
       state.sensors = Array<sensor>();
       state.walls = Array<wall>();
+      state.agent = new position(0,0);
       sessionStorage.setItem("sensors", JSON.stringify(state.sensors));
       sessionStorage.setItem("walls", JSON.stringify(state.walls));
+      sessionStorage.setItem("agent",JSON.stringify(state.agent));
     },
   },
-  /*,
-    actions: {
-        addSensor(context, newSensor: sensor) {
-            context.commit('addSensor', newSensor);
-        },
-        addWall(context,newWall: position){
-            context.commit('addWall',newWall);
-        }
-    }*/
 });

@@ -1,70 +1,21 @@
 <template>
   <div>
-    <transition name="model">
-      <div class="modal-mask">
-        <div class="modal-wrapper">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h4 class="modal-title">{{ sensorFormTitle }}</h4>
-                <button type="button" class="close" @click="closeAddSensor">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                <div class="form-group">
-                  <label>Name:</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="sensorName"
-                  />
-                </div>
-                <br />
-                <div class="form-group">
-                  <label>Positions:</label>
-                  <div v-if="getPositions">
-                    <button
-                      type="button"
-                      class="btn"
-                      @click="triggerAddSensorPositionEvents"
-                    >
-                      Draw sensor on the grid
-                    </button>
-                  </div>
-                  {{ positions }}
-                  <!--
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="sensorPosition"
-                    placeholder="e.g 12-31,12-32,11-31"
-                  />-->
-                </div>
-                <br />
-                <div class="form-group">
-                  <label>Trigger Area:</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="sensorTriggerArea"
-                    placeholder="e.g 12-31,12-32,11-31"
-                  />
-                </div>
-                <div align="center">
-                  <input
-                    type="button"
-                    class="btn btn-success btn-xs"
-                    v-model="actionButton"
-                    @click="submitSensorInformation"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </transition>
+    <v-card class="mx-auto" max-width="500" outlined elevation="2" shaped>
+      <v-card-title>Please enter further details about the sensor</v-card-title>
+
+      <v-list-item>
+        <label>Name: </label>
+        <input type="text" class="form-control" v-model="name" />
+      </v-list-item>
+      <br />
+      <v-list-item>
+        <label>Trigger Frequency </label>
+        <input type="text" class="form-control" v-model="triggerFrequency" />
+      </v-list-item>
+      <v-card-actions>
+        <v-btn outlined rounded text @click="submit"> Submit </v-btn>
+      </v-card-actions>
+    </v-card>
   </div>
 </template>
 
@@ -74,91 +25,33 @@ import position from "../../models/position";
 import sensor from "../../models/sensor";
 export default {
   name: "AddSensor",
+  props: ["positions", "triggerArea"],
   data() {
     return {
-      sensorFormTitle: "Add a New Sensor",
-      sensorName: sessionStorage.getItem("sensorName") || "",
-      sensorPosition: sessionStorage.getItem("sensorPosition") || "",
-      sensorTriggerArea: sessionStorage.getItem("sensorTriggerArea") || "",
-      actionButton: "Submit",
-      getPositions: sessionStorage.getItem("getPositions") || true,
-      positions: sessionStorage.getItem("positions") || "",
+      name: "",
+      triggerFrequency: "",
     };
   },
   methods: {
-    closeAddSensor() {
-      this.$emit("closeAddSensorForm");
+    submit() {
+      let sensorObject = new sensor(uuidv4(),this.name,this.getListPositions(this.positions),this.getListPositions(this.triggerArea),parseInt(this.triggerFrequency));
+      this.$store.commit(
+        "addSensor",
+        sensorObject
+      );
+      this.$emit("closeSensorForm");
     },
-    getListPositions(stringPositions) {
-      let positions = stringPositions.split(",");
+    getListPositions(positions) {
       let positionObjects = [];
-      for (let i = 0; i < positions.length; i++) {
-        let coords = positions[i].split("-");
+      positions.forEach(id=>{
+        let coords = id.split("-");
         positionObjects.push(
           new position(parseInt(coords[0]), parseInt(coords[1]))
         );
-      }
+      });
       return positionObjects;
-    },
-    submitSensorInformation() {
-      let newSensor = new sensor(
-        uuidv4(),
-        this.sensorName,
-        this.getListPositions(this.positions), //this.sensorPosition),
-        this.getListPositions(this.sensorTriggerArea)
-      );
-      this.$root.$emit("NewSensorHasBeenSubmitted", newSensor);
-      this.closeAddSensor();
-      this.sensorName = "";
-      sessionStorage.setItem("sensorName", "");
-      this.sensorType = "";
-      sessionStorage.setItem("sensorType", "");
-      this.sensorPosition = "";
-      sessionStorage.setItem("sensorPosition", "");
-      this.sensorTriggerArea = "";
-      sessionStorage.setItem("sensorTriggerArea", "");
-      this.getPositions = true;
-      sessionStorage.setItem("getPositions", true);
-      this.positions = "";
-      sessionStorage.setItem("positions", "");
-    },
-    triggerAddSensorPositionEvents() {
-      sessionStorage.setItem("sensorName", this.sensorName);
-      sessionStorage.setItem("sensorType", this.sensorType);
-      sessionStorage.setItem("sensorTriggerArea", this.sensorTriggerArea);
-      this.$root.$emit("DrawSensorOnGrid");
-      this.$emit("closeAddSensorForm");
-    },
-    sensorPositions(positions) {
-      this.positions = positions.join(",");
-      sessionStorage.setItem("positions", this.positions);
-      console.log(this.positions);
-      this.getPositions = false;
-      sessionStorage.setItem("getPostions", false);
-    },
-  },
-  mounted() {
-    this.$root.$on("SensorPositionInfo", (Positions) => {
-      this.sensorPositions(Positions);
-    });
+    }
   },
 };
 </script>
 
-<style>
-.modal-mask {
-  position: fixed;
-  z-index: 9998;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: table;
-  transition: opacity 0.3s ease;
-}
-.modal-wrapper {
-  display: table-cell;
-  vertical-align: middle;
-}
-</style>

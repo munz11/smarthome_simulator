@@ -7,50 +7,184 @@
           v-for="j in col"
           :id="i + '-' + j"
           v-bind:key="j"
+          @mouseover="addWall(i + '-' + j)"
           v-on:click.exact="addObject(i + '-' + j)"
-          v-tooltip="i+'-'+j"
+          v-on:dblclick.exact="addSensorTrigger(i + '-' + j)"
+          v-tooltip="i + '-' + j "
         ></td>
       </tr>
     </tbody>
+    <v-snackbar v-model="SnackBar" timeout="-1">
+      {{ text }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="pink" text v-bind="attrs" @click="closeSnackBar">
+          {{ btnText }}
+        </v-btn>
+      </template>
+    </v-snackbar>
+    <v-overlay :value="sensorForm">
+      <AddSensor
+        :positions="sensorPositionNodes"
+        :triggerArea="sensorTriggerNodes"
+        @closeSensorForm="closeSensorForm"
+      />
+    </v-overlay>
   </div>
 </template>
 
 <script>
-
+import wall from "@/models/wall";
+import position from "@/models/position";
+import AddSensor from "@/components/widgets/addSensor.vue";
 
 export default {
   name: "Grid",
-  props: ["widthNodes", "heightNodes","objectBeingAdded"],
-  data(){
+  props: ["widthNodes", "heightNodes"],
+  components: {
+    AddSensor,
+  },
+  data() {
     return {
       row: this.widthNodes,
       col: this.heightNodes,
-      occupiedNodes: []
-    }
+      occupiedNodes: [],
+      SnackBar: false,
+      sensorTriggerNodes: new Set(),
+      sensorPositionNodes: new Set(),
+      text: "",
+      btnText: "",
+      lastAddedAgentID: "",
+      objectBeingAdded: "wall",
+      sensorForm: false,
+      multiwall: false
+    };
   },
   methods: {
-    addObject(id){
-      if (this.objectBeingAdded!="activities"){
+    addObject(id) {
+      if (this.objectBeingAdded != "activities") {
         let l = document.getElementById(id);
-        l.setAttribute("class", this.objectBeingAdded); 
+        l.setAttribute("class", this.objectBeingAdded);
+
+        if (this.objectBeingAdded === "sensorPosition") {
+          this.sensorPositionNodes.add(id);
+        }
         this.occupiedNodes.push(id);
-        //need to save in store
+        this.updateStore(id);
+
+        if (this.objectBeingAdded == "wall") {
+          this.multiwall = !this.multiwall;
+        }
       }
     },
-    clear(){
-      for(let i=0;i<this.occupiedNodes.length;i++){
+    addWall(id) {
+      if (this.multiwall && this.objectBeingAdded == "wall") {
+        let l = document.getElementById(id);
+        l.setAttribute("class", this.objectBeingAdded);
+        this.occupiedNodes.push(id);
+        this.updateStore(id);
+      }
+    },
+    updateStore(id) {
+      let coords = id.split("-");
+      if (this.objectBeingAdded === "wall") {
+        this.$store.commit(
+          "addWall",
+          new wall(new position(parseInt(coords[0]), parseInt(coords[1])))
+        );
+      } else if (this.objectBeingAdded === "agent") {
+        this.updateAgentNodes(id);
+        this.$store.commit(
+          "updateAgent",
+          new position(parseInt(coords[0]), parseInt(coords[1]))
+        );
+      }
+    },
+    updateAgentNodes(id) {
+      if (this.lastAddedAgentID != "") {
+        let l2 = document.getElementById(this.lastAddedAgentID);
+        l2.setAttribute("class", "unvisited");
+      }
+      this.lastAddedAgentID = id;
+    },
+    addSensorTrigger(id) {
+      if (this.objectBeingAdded === "sensorPosition") {
+        let l = document.getElementById(id);
+        l.setAttribute("class", "sensorTrigger");
+        this.sensorTriggerNodes.add(id);
+        if (this.sensorPositionNodes.has(id)) {
+          this.sensorPositionNodes.delete(id);
+        }
+      }
+    },
+    clear() {
+      for (let i = 0; i < this.occupiedNodes.length; i++) {
         let l = document.getElementById(this.occupiedNodes[i]);
-        l.setAttribute("class","unvisited");
+        l.setAttribute("class", "unvisited");
         //need to save in store
       }
-      this.occupiedNodes=[];
-    }
+      this.occupiedNodes = [];
+      this.$store.commit("clearAllInfoOnGrid");
+    },
+    alertSensorForm() {
+      this.sensorForm = true;
+    },
+    closeSensorForm() {
+      this.sensorForm = false;
+      this.sensorTriggerNodes.forEach((id) => {
+        let l = document.getElementById(id);
+        l.setAttribute("class", "unvisited");
+      });
+      this.sensorTriggerNodes.clear();
+      this.sensorPositionNodes.clear();
+    },
+    closeSnackBar() {
+      if (this.objectBeingAdded === "sensorPosition") {
+        this.alertSensorForm();
+      }
+      this.objectBeingAdded = "wall";
+      this.SnackBar = false;
+    },
+    updateTile(position, object) {
+      let id = position.x.toString() + "-" + position.y.toString();
+      let l = document.getElementById(id);
+      l.setAttribute("class", object);
+      this.occupiedNodes.push(id);
+    },
+    updateGridToStore() {
+      let agent = this.$store.state.agent;
+      this.updateTile(agent, "agent");
+      this.lastAddedAgentID = agent.x.toString() + "-"+ agent.y.toString();
+      let walls = this.$store.state.walls;
+      for (let i = 0; i < walls.length; i++) {
+        this.updateTile(walls[i].position, "wall");
+      }
+      let sensors = this.$store.state.sensors;
+      for (let i = 0; i < sensors.length; i++) {
+        for (let j = 0; j < sensors[i].positions.length; j++) {
+          this.updateTile(sensors[i].positions[j], "sensorPosition");
+        }
+      }
+    },
   },
-  mounted(){
+  mounted() {
+    this.updateGridToStore();
     this.$root.$on("gridClear", () => {
       this.clear();
     });
-  }
+    this.$root.$on("gridAddSensor", () => {
+      this.objectBeingAdded = "sensorPosition";
+      this.SnackBar = true;
+      this.text = "Add further details about the sensor";
+      this.btnText = "Continue";
+    });
+    this.$root.$on("gridAddAgent", () => {
+      this.objectBeingAdded = "agent";
+      this.SnackBar = true;
+      this.text = "Finish adding the agent";
+      this.btnText = "Done";
+    });
+  },
 };
 </script>
 <style>
@@ -77,6 +211,26 @@ export default {
   /* display: inline-block; */
   background-color: rgba(255, 255, 255, 0.89);
   animation-name: makewall;
+  animation-duration: 0.5s;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease-out;
+  width: 25px;
+  height: 25px;
+}
+@keyframes makeagent {
+  from {
+    /* transform: scale(0.5); */
+    background-color: rgba(253, 253, 253, 0.89);
+  }
+  to {
+    /* transform: scale(1); */
+    background-color: rgb(22, 230, 84);
+  }
+}
+.agent {
+  /* display: inline-block; */
+  background-color: rgba(255, 255, 255, 0.89);
+  animation-name: makeagent;
   animation-duration: 0.5s;
   animation-fill-mode: forwards;
   animation-timing-function: ease-out;
@@ -110,7 +264,7 @@ export default {
   }
   to {
     /* transform: scale(1); */
-    background-color: rgb(129, 21, 84);
+    background-color: rgb(204, 90, 226);
   }
 }
 .sensorTrigger {

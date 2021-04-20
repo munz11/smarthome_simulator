@@ -10,7 +10,7 @@
           @mouseover="addWall(i + '-' + j)"
           v-on:click.exact="addObject(i + '-' + j)"
           v-on:dblclick.exact="addSensorTrigger(i + '-' + j)"
-          v-tooltip="i + '-' + j "
+          v-tooltip.hover.focus="i + '-' + j "
         ></td>
       </tr>
     </tbody>

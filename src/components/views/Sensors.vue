@@ -1,10 +1,20 @@
 <template>
   <div class="Sensors">
     <b-container fluid>
-      <p>At Sensors</p>
-      <div class="pt-3">
-        <b-link class="ml-3" :to="{ name: 'AddSensor' }">Add Sensor</b-link>
-      </div>
+      <v-data-table
+        :headers="headers"
+        :items="sensors"
+        item-key="id"
+        class="elevation-1"
+        :search="search"
+        ><template v-slot:top>
+          <v-text-field
+            v-model="search"
+            label="Search"
+            class="mx-4"
+          ></v-text-field>
+        </template>
+      </v-data-table>
     </b-container>
   </div>
 </template>
@@ -12,5 +22,21 @@
 <script>
 export default {
   name: "Sensors",
+  data() {
+    return {
+      search: "",
+      sensors: this.$store.state.sensors,
+      headers:[{
+          text: "Name",
+          sortable: true,
+          value: "name",
+        },
+        {
+          text: "Trigger Frequency",
+          sortable: true,
+          value: "triggerFrequency",
+        }]
+    };
+  }
 };
 </script>

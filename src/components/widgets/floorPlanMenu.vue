@@ -25,7 +25,7 @@
 
 <script>
 export default {
-  name: "Menu",
+  name: "FloorPlanMenu",
   data(){
     return{
       items: [
@@ -42,4 +42,3 @@ export default {
   }
 };
 </script>
-<style></style>

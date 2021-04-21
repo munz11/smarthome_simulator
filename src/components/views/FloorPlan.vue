@@ -2,20 +2,20 @@
   <div class="FloorPlan">
     <b-container fluid>
       <b-row>
-      <Menu />
-      <Grid v-bind:widthNodes="widthNodes" v-bind:heightNodes="heightNodes" />
+      <FloorPlanMenu />
+      <Grid v-bind:widthNodes="widthNodes" v-bind:heightNodes="heightNodes" :editPlan="true" />
       </b-row>
     </b-container>
   </div>
 </template>
 
 <script>
-import Menu from "@/components/widgets/menu.vue";
+import FloorPlanMenu from "@/components/widgets/floorPlanMenu.vue";
 import Grid from "@/components/widgets/grid.vue";
 
 export default {
   name: "FloorPlan",
-  components: { Menu, Grid },
+  components: { FloorPlanMenu, Grid },
   data() {
     return {
       widthNodes: [],

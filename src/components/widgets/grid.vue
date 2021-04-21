@@ -40,7 +40,7 @@ import AddSensor from "@/components/widgets/addSensor.vue";
 
 export default {
   name: "Grid",
-  props: ["widthNodes", "heightNodes"],
+  props: ["widthNodes", "heightNodes","editPlan"],
   components: {
     AddSensor,
   },
@@ -57,12 +57,13 @@ export default {
       lastAddedAgentID: "",
       objectBeingAdded: "wall",
       sensorForm: false,
-      multiwall: false
+      multiwall: false,
+      selectedNode:""
     };
   },
   methods: {
     addObject(id) {
-      if (this.objectBeingAdded != "activities") {
+      if (this.editPlan) {
         let l = document.getElementById(id);
         l.setAttribute("class", this.objectBeingAdded);
 
@@ -75,6 +76,10 @@ export default {
         if (this.objectBeingAdded == "wall") {
           this.multiwall = !this.multiwall;
         }
+      }else if(this.objectBeingAdded==="GoTo" || this.objectBeingAdded==="Interact"){
+        this.selectedNode = id;
+        let l = document.getElementById(id);
+        l.setAttribute("class", "Selected");
       }
     },
     addWall(id) {
@@ -138,9 +143,25 @@ export default {
       this.sensorTriggerNodes.clear();
       this.sensorPositionNodes.clear();
     },
+    updateAgentTileForSimulation(newTile){
+      let l = document.getElementById(this.lastAddedAgentID);
+      l.setAttribute("class","unvisited");
+      l = document.getElementById(newTile);
+      l.setAttribute("class","agent");
+      this.lastAddedAgentID=newTile;
+    },
     closeSnackBar() {
       if (this.objectBeingAdded === "sensorPosition") {
         this.alertSensorForm();
+      } else if (this.objectBeingAdded === "GoTo"){
+        this.$root.$emit("TileGoTo",this.selectedNode);
+        this.updateAgentTileForSimulation(this.selectedNode);
+        this.selectedNode="";
+      } else if(this.objectBeingAdded=== "Interact"){
+        this.$root.$emit("SensorInteract",this.selectedNode);
+              let l = document.getElementById(this.selectedNode);
+      l.setAttribute("class","sensorPosition");
+        this.selectedNode="";
       }
       this.objectBeingAdded = "wall";
       this.SnackBar = false;
@@ -175,15 +196,27 @@ export default {
     this.$root.$on("gridAddSensor", () => {
       this.objectBeingAdded = "sensorPosition";
       this.SnackBar = true;
-      this.text = "Add further details about the sensor";
+      this.text = "Add further details about the sensor.";
       this.btnText = "Continue";
     });
     this.$root.$on("gridAddAgent", () => {
       this.objectBeingAdded = "agent";
       this.SnackBar = true;
-      this.text = "Finish adding the agent";
+      this.text = "Finish adding the agent.";
       this.btnText = "Done";
     });
+    this.$root.$on("GoTo",()=>{
+      this.objectBeingAdded ="GoTo";
+      this.SnackBar= true;
+      this.text="Select tile to which you want the agent to move to.";
+      this.btnText = "Done";
+    });
+    this.$root.$on("Interact",()=>{
+      this.objectBeingAdded="Interact";
+      this.SnackBar=true;
+      this.text ="Select the sensor you want agent to interact with, the selected tile will turn red.";
+      this.btnText = "Done";
+    })
   },
 };
 </script>
@@ -271,6 +304,26 @@ export default {
   /* display: inline-block; */
   background-color: rgba(255, 255, 255, 0.89);
   animation-name: makeSensorTrigger;
+  animation-duration: 0.5s;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease-out;
+  width: 25px;
+  height: 25px;
+}
+@keyframes makeSelected{
+  from {
+    /* transform: scale(0.5); */
+    background-color: rgba(253, 253, 253, 0.89);
+  }
+  to {
+    /* transform: scale(1); */
+    background-color: rgb(182, 46, 5);
+  }
+}
+.Selected {
+  /* display: inline-block; */
+  background-color: rgba(255, 255, 255, 0.89);
+  animation-name: makeSelected;
   animation-duration: 0.5s;
   animation-fill-mode: forwards;
   animation-timing-function: ease-out;

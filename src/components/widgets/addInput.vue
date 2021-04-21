@@ -1,107 +1,87 @@
 <template>
   <div>
-    <transition name="model">
-      <div class="modal-mask">
-        <div class="modal-wrapper">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h4 class="modal-title">Add the activities</h4>
-                <button type="button" class="close" @click="closeAddInput">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                <div v-if="!submitted">
-                  <b-container fluid>
-                    <b-row>
-                      <b-form-textarea
-                        id="activities"
-                        placeholder="e.g: goto(12,32);interact(light1);wait(1000)"
-                        rows="2"
-                        max-rows="30"
-                        v-model="activties"
-                      />
-                    </b-row>
-                  </b-container>
-                  <br />
-                  <div align="center">
-                    <input
-                      type="button"
-                      class="btn btn-success btn-xs"
-                      @click="submitInputInformation"
-                      v-model="actionButton"
-                    />
-                  </div>
-                </div>
-                <div v-if="submitted">
-                  <p class="modal-body">
-                    {{ responseFromSubmission }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </transition>
+    <v-textarea
+      filled
+      name="input-7-4"
+      label="Enter Activities"
+      :value="activities"
+    ></v-textarea>
+    <v-btn outlined rounded text @click="submitActivities"> Start Simulation </v-btn>
+    <br>
+    <br>
   </div>
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
   name: "AddInput",
   data() {
     return {
-      activties: "",
-      actionButton: "Submit",
-      submitted: false,
-      responseFromSubmission: "",
+      activities: sessionStorage.getItem("activities")||"",
     };
   },
   methods: {
-    closeAddInput() {
-      this.$emit("closeAddInput");
+    fixTileID(selectedNode) {
+      let coord = selectedNode.split("-");
+      return coord.join(",");
     },
-    submitInputInformation() {
-      //roomconfig part -> will need to move this out of here on refactoring to run simulation or some other part
-      let roomConfig = {
-        width: 41,
-        height: 22,
-        agent: this.$store.state.agent,
-        sensors: this.$store.state.sensors,
-        walls: this.$store.state.walls,
-      };
-      let input = {
-        input: this.activties,
-      };
-      console.log(roomConfig);
-      axios.post(this.$smartHomeBackend.getUrlRoomConfig(), roomConfig).then(
-        (response) => {
-          console.log(response);
-          axios.post(this.$smartHomeBackend.getUrlInput(), input).then(
-            (response2) => {
-              console.log(response2);
-              console.log(input);
-              if (response2.data == "consumed") {
-                this.responseFromSubmission = "Request sent to the server";
-              } else {
-                this.responseFromSubmission = response2.data;
-              }
-            },
-            (error) => {
-              this.responseFromSubmission = error;
-            }
-          );
-        },
-        (error) => {
-          this.responseFromSubmission = error;
+    updateSessionStorage(){
+      sessionStorage.setItem("activities", this.activities);
+    },
+    addGoToActivity(selectedNode) {
+      if (this.activities == "") {
+        this.activities = "goto(" + this.fixTileID(selectedNode) + ")";
+      } else {
+        this.activities =
+          this.activities + ";goto(" + this.fixTileID(selectedNode) + ")";
+      }
+      this.updateSessionStorage();
+    },
+    addWaitActivity(time) {
+      if (this.activities == "") {
+        this.activities = "wait(" + time + ")";
+      } else {
+        this.activities = this.activities + ";wait(" + time + ")";
+      }
+      this.updateSessionStorage();
+    },
+    convertPositionObjToID(position){
+      return position.x.toString()+"-"+position.y.toString();
+    },
+    findSensorName(selectedNode) {
+      //this can be optimized by better algorithm
+      let sensors = this.$store.state.sensors;
+      for(let i=0;i<sensors.length;i++){
+        for(let j=0;j<sensors[i].positions.length;j++){
+
+          if(this.convertPositionObjToID(sensors[i].positions[j])===selectedNode){
+            return sensors[i].name;
+          }
         }
-      );
-      this.submitted = true;
+      }
     },
+    addInteractActivity(selectedNode) {
+      if (this.activities == "") {
+        this.activities = "interact(" + this.findSensorName(selectedNode) + ")";
+      } else {
+        this.activities = this.activities + ";interact(" + this.findSensorName(selectedNode) + ")";
+      }
+      this.updateSessionStorage();
+    },
+    submitActivities(){
+      console.log("Submit ACtivities")
+    }
+  },
+  mounted() {
+    this.$root.$on("TileGoTo", (selectedNode) => {
+      this.addGoToActivity(selectedNode);
+    });
+    this.$root.$on("TimeWait", (time) => {
+      this.addWaitActivity(time);
+    });
+    this.$root.$on("SensorInteract", (selectedNode) => {
+      this.addInteractActivity(selectedNode);
+    });
   },
 };
 </script>

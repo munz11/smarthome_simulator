@@ -19,4 +19,7 @@ export default class smartHomeBackend {
   getUrlRoomConfig(): string {
     return this.getUrl() + "/api/roomConfig/floorplan";
   }
+  getUrlSimulation(): string{
+    return this.getUrl() +"/api/simulation/simulator";
+  }
 }

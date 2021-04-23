@@ -5,12 +5,12 @@
         <td
           class="unvisited"
           v-for="j in col"
-          :id="i + '-' + j"
+          :id="j + '-' + i"
           v-bind:key="j"
-          @mouseover="addWall(i + '-' + j)"
-          v-on:click.exact="addObject(i + '-' + j)"
-          v-on:dblclick.exact="addSensorTrigger(i + '-' + j)"
-          v-tooltip.hover.focus="i + '-' + j "
+          @mouseover="addWall(j + '-' + i)"
+          v-on:click.exact="addObject(j + '-' + i)"
+          v-on:dblclick.exact="addSensorTrigger(j + '-' + i)"
+          v-tooltip.hover.focus="j + '-' + i "
         ></td>
       </tr>
     </tbody>
@@ -46,8 +46,8 @@ export default {
   },
   data() {
     return {
-      row: this.widthNodes,
-      col: this.heightNodes,
+      row: this.heightNodes,
+      col: this.widthNodes,
       occupiedNodes: [],
       SnackBar: false,
       sensorTriggerNodes: new Set(),

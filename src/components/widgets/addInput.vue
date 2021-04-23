@@ -4,28 +4,48 @@
       filled
       name="input-7-4"
       label="Enter Activities"
+      :v-model="activities"
       :value="activities"
     ></v-textarea>
-    <v-btn outlined rounded text @click="submitActivities"> Start Simulation </v-btn>
-    <br>
-    <br>
+    <v-btn outlined rounded text @click="submitActivitiesAndFloorPlan">
+      Start Simulation
+    </v-btn>
+    <br />
+    <br />
+    <v-snackbar v-model="SnackBar" timeout="-1">
+      {{ text }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="pink" text v-bind="attrs" @click="closeSnackBar">
+          {{ btnText }}
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
 <script>
+import axios from "axios";
 export default {
   name: "AddInput",
   data() {
     return {
-      activities: sessionStorage.getItem("activities")||"",
+      activities: "",
+      SnackBar:false,
+      text:"",
+      btnText:"Close"
     };
   },
   methods: {
+    closeSnackBar(){
+      this.text="";
+      this.SnackBar=false;
+    },
     fixTileID(selectedNode) {
       let coord = selectedNode.split("-");
       return coord.join(",");
     },
-    updateSessionStorage(){
+    updateSessionStorage() {
       sessionStorage.setItem("activities", this.activities);
     },
     addGoToActivity(selectedNode) {
@@ -45,16 +65,18 @@ export default {
       }
       this.updateSessionStorage();
     },
-    convertPositionObjToID(position){
-      return position.x.toString()+"-"+position.y.toString();
+    convertPositionObjToID(position) {
+      return position.x.toString() + "-" + position.y.toString();
     },
     findSensorName(selectedNode) {
       //this can be optimized by better algorithm
       let sensors = this.$store.state.sensors;
-      for(let i=0;i<sensors.length;i++){
-        for(let j=0;j<sensors[i].positions.length;j++){
-
-          if(this.convertPositionObjToID(sensors[i].positions[j])===selectedNode){
+      for (let i = 0; i < sensors.length; i++) {
+        for (let j = 0; j < sensors[i].positions.length; j++) {
+          if (
+            this.convertPositionObjToID(sensors[i].positions[j]) ===
+            selectedNode
+          ) {
             return sensors[i].name;
           }
         }
@@ -64,13 +86,49 @@ export default {
       if (this.activities == "") {
         this.activities = "interact(" + this.findSensorName(selectedNode) + ")";
       } else {
-        this.activities = this.activities + ";interact(" + this.findSensorName(selectedNode) + ")";
+        this.activities =
+          this.activities +
+          ";interact(" +
+          this.findSensorName(selectedNode) +
+          ")";
       }
       this.updateSessionStorage();
     },
-    submitActivities(){
-      console.log("Submit ACtivities")
-    }
+    submitActivitiesAndFloorPlan() {
+      let floorPlan = {
+        tileSideLength: this.$store.state.floorPlanDetails.tileSideLenght,
+        width: this.$store.state.floorPlanDetails.width,
+        height: this.$store.state.floorPlanDetails.height,
+        agent: { position: this.$store.state.agent, speed: 1 },
+        sensors: this.$store.state.sensors,
+        walls: this.$store.state.walls,
+      };
+      let activities = {
+        input: this.activities,
+      };
+      axios
+        .post(this.$smartHomeBackend.getUrlRoomConfig(), floorPlan)
+        .then((resFloorPlan) =>{
+          axios
+            .post(this.$smartHomeBackend.getUrlInput(), activities)
+            .then((resInput) => {
+              if (resInput.data == "consumed") {
+                this.$root.$emit("simulationInfoAdd");
+              } else {
+                this.text=resInput.data;
+                this.SnackBar=true;
+              }
+            })
+            .catch((err) =>{
+              this.text=err;
+              this.SnackBar=true;
+            });}
+        )
+        .catch((err)=>{
+          this.text=err;
+          this.SnackBar=true;
+        });
+    },
   },
   mounted() {
     this.$root.$on("TileGoTo", (selectedNode) => {

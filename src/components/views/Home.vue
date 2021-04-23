@@ -8,13 +8,13 @@
         >
 
         <v-list-item>
-          <label>Width: </label>
-          <input type="text" class="form-control" v-model="width" />
+          <label>Height: </label>
+          <input type="text" class="form-control" v-model="height" />
         </v-list-item>
         <br />
         <v-list-item>
-          <label>Height: </label>
-          <input type="text" class="form-control" v-model="height" />
+          <label>Width: </label>
+          <input type="text" class="form-control" v-model="width" />
         </v-list-item>
         <br />
         <v-list-item>
@@ -43,7 +43,7 @@ export default {
   },
   methods: {
     submitFloorPlanInfo(){
-      this.$store.commit("updateFloorPlanDetails",new floorPlanDetails(parseInt(this.height),parseInt(this.width),parseInt(this.tileSideLength)));
+      this.$store.commit("updateFloorPlanDetails",new floorPlanDetails(parseInt(this.width),parseInt(this.height),parseInt(this.tileSideLength)));
 
       this.$router.push({ name: 'FloorPlan' })
     }

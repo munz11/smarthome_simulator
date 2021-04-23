@@ -24,7 +24,7 @@
       </v-card>
     </v-overlay>
     <div :v-if="simulationInfo">
-      <AddSimulationInfo />
+      <AddSimulationInfo @simulationClose="simulationInfo=false"/>
     </div>
   </div>
 </template>
@@ -54,6 +54,7 @@ export default {
     },
   },
   mounted() {
+    console.log(this.simulationInfo);
     this.$root.$on("Wait", () => {
       this.waitInfo = true;
     });

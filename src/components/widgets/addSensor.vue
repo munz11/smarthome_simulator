@@ -19,12 +19,6 @@
         <v-checkbox
         v-model="walkable"
         />
-        <!--input
-          type="radio"
-          class="form-control"
-          v-model="walkable"
-          value="true"
-        /-->
       </v-list-item>
       <br />
       <v-list-item>

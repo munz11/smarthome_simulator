@@ -47,6 +47,15 @@
         <v-btn outlined rounded text @click="submit"> Submit</v-btn>
       </v-card-actions>
     </v-card>
+        <v-snackbar v-model="SnackBar" timeout="-1">
+      {{ text }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="pink" text v-bind="attrs" @click="closeSnackBar">
+          {{ btnText }}
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -75,6 +84,9 @@ export default {
       mqttHost: "broker.hivemq.com",
       mqttPort: "1883",
       rootTopic: "smartHome",
+      text:"",
+      btnText:"",
+      SnackBar:false
     };
   },
   methods: {
@@ -101,15 +113,24 @@ export default {
         "mqttPort":this.mqttPort,
         "rootTopic":this.rootTopic
       };
-      console.log(simulationJson);
       axios.post(this.$smartHomeBackend.getUrlSimulation(), simulationJson)
-           .then(res =>{
-             console.log(res);
+           .then((res) =>{
+             this.text="The simulation has started, the data can be found at the mqtt host:"+this.mqttHost;
+             this.btnText="Close";
+             this.SnackBar=true;
+             this.$emit("simulationClose");
            })
            .catch(err=>{
-             console.log(err);
+             this.text=err;
+             this.btnText="Close";
+             this.SnackBar=true;
            })
     },
+    closeSnackBar(){
+      this.text="";
+      this.btnText="";
+      this.SnackBar=false;
+    }
   },
 };
 </script>

@@ -34,6 +34,7 @@
           <b-nav-item :to="{ name: 'FloorPlan' }">FloorPlan</b-nav-item>
           <b-nav-item :to="{ name: 'Sensors' }">Sensors</b-nav-item>
           <b-nav-item :to="{ name: 'Simulation' }">Simulation</b-nav-item>
+          <b-nav-item :to="{ name: 'WebSocket' }">WebSocket</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
     </b-navbar>

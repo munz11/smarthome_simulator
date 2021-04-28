@@ -1,8 +1,8 @@
 <template>
   <div class="FloorPlan">
-      <v-container fluid  fill-height>
-        <v-row>
-        <FloorPlanMenu />
+    <v-container fluid fill-height>
+      <v-row>
+        <FloorPlanMenu @gridZoomIn="zoomIn" @gridZoomOut="zoomOut" />
         <div id="Grid">
           <Grid
             v-bind:widthNodes="widthNodes"
@@ -10,8 +10,8 @@
             :editPlan="true"
           />
         </div>
-        </v-row>
-      </v-container>
+      </v-row>
+    </v-container>
   </div>
 </template>
 
@@ -31,8 +31,11 @@ export default {
     };
   },
   methods: {
-    zoom(level) {
-      level === -1 ? this.panzoom.zoomOut() : this.panzoom.zoomIn();
+    zoomIn() {
+      this.panzoom.zoomIn();
+    },
+    zoomOut() {
+      this.panzoom.zoomOut();
     },
   },
   created() {
@@ -48,7 +51,6 @@ export default {
   mounted() {
     this.panzoom = Panzoom(document.getElementById("Grid"), {
       maxScale: 5,
-      touchAction: ""
     });
   },
 };

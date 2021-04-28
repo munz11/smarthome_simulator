@@ -2,7 +2,6 @@
   <div>
     <v-card class="mx-auto" max-width="500" outlined elevation="2" shaped>
       <v-card-title>Please enter further details about the sensor</v-card-title>
-
       <v-list-item>
         <label>Name: </label>
         <input type="text" class="form-control" v-model="name" />

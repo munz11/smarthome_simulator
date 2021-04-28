@@ -32,6 +32,16 @@ export default {
           value: "name",
         },
         {
+          text: "Type",
+          sortable: true,
+          value:"type",
+        },
+        {
+          text:"Walkable",
+          sortable:false,
+          value:"walkable"
+        },
+        {
           text: "Trigger Frequency",
           sortable: true,
           value: "triggerFrequency",

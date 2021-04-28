@@ -60,7 +60,6 @@
 </template>
 
 <script>
-import simulationData from "@/models/simulationData";
 import axios from "axios";
 export default {
   name: "AddSimulationInfo",

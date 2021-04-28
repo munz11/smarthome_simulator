@@ -1,33 +1,38 @@
 <template>
   <div>
-    <v-card width="250" class="mx-auto">
-      <v-navigation-drawer permanent>
-        <v-list-item>
+    <v-card v-resize="onResize" :height="y" width="250" class="mx-auto">
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title class="title"
+            >Atomic Actions for Activities
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+      <v-divider />
+      <v-list dense nav>
+        <v-list-item
+          v-for="item in items"
+          :key="item.title"
+          @click="executeEvent(item.eventName)"
+        >
           <v-list-item-content>
-            <v-list-item-title class="title"
-              >Atomic Actions for Activities
-            </v-list-item-title>
+            <v-list-item-title>{{ item.title }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-divider />
-        <v-list dense nav>
-          <v-list-item
-            v-for="item in items"
-            :key="item.title"
-            @click="executeEvent(item.eventName)"
-          >
-            <!--<v-list-item-icon>
-              <v-icon>{{ item.icon }}</v-icon>
-            </v-list-item-icon>-->
-            <v-list-item-content>
-              <v-list-item-title>{{ item.title }}</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
-      </v-navigation-drawer>
-      <v-divider/>
+        <v-list-item @click="zoomIn">
+          <v-list-item-content>
+            <v-list-item-title> Zoom In </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item @click="zoomOut">
+          <v-list-item-content>
+            <v-list-item-title> Zoom Out </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+      <v-divider />
       <v-list-item>
-          <AddInput/>
+        <AddInput />
       </v-list-item>
     </v-card>
   </div>
@@ -37,23 +42,30 @@
 import AddInput from "@/components/widgets/addInput.vue";
 export default {
   name: "SimulationMenu",
-  components: {AddInput},
+  components: { AddInput },
   data() {
     return {
       items: [
         { title: "Goto", eventName: "GoTo" },
         { title: "Wait", eventName: "Wait" },
         { title: "Interact", eventName: "Interact" },
-      ]
+      ],
+      y: window.innerHeight - 57,
     };
   },
   methods: {
     executeEvent(eventName) {
       this.$root.$emit(eventName);
     },
-    submitSimulationInfo() {
-      console.log(this.activities);
+    onResize() {
+      this.y = window.innerHeight - 57;
+    },
+    zoomIn() {
+      this.$emit("gridZoomIn");
+    },
+    zoomOut() {
+      this.$emit("gridZoomOut");
     }
-  }
+  },
 };
 </script>

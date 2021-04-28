@@ -1,16 +1,18 @@
 <template>
   <div class="Simulation">
-    <b-container fluid>
-      <b-row>
-        <SimulationMenu />
-        <Grid
-          v-bind:widthNodes="widthNodes"
-          v-bind:heightNodes="heightNodes"
-          :editPlan="editPlan"
-        />
-      </b-row>
-    </b-container>
-    <v-overlay :value="waitInfo">
+    <v-container fluid fill-height>
+      <v-row>
+        <SimulationMenu @gridZoomIn="zoomIn" @gridZoomOut="zoomOut" />
+        <div id="Grid">
+          <Grid
+            v-bind:widthNodes="widthNodes"
+            v-bind:heightNodes="heightNodes"
+            :editPlan="editPlan"
+          />
+        </div>
+      </v-row>
+    </v-container>
+    <v-overlay :value="waitInfo" light="true" dark="false">
       <v-card class="mx-auto" max-width="500" outlined elevation="2" shaped>
         <v-card-title>Enter time duration for wait</v-card-title>
 
@@ -23,9 +25,9 @@
         </v-card-actions>
       </v-card>
     </v-overlay>
-    <div :v-if="simulationInfo">
-      <AddSimulationInfo @simulationClose="simulationInfo=false"/>
-    </div>
+    <v-overlay :value="simulationInfo" light="true" dark="false">
+      <AddSimulationInfo @simulationClose="simulationInfo = false" />
+    </v-overlay>
   </div>
 </template>
 
@@ -33,10 +35,11 @@
 import SimulationMenu from "@/components/widgets/simulationMenu.vue";
 import Grid from "@/components/widgets/grid.vue";
 import AddSimulationInfo from "@/components/widgets/addSimulationInfo.vue";
+import Panzoom from "@panzoom/panzoom";
 
 export default {
   name: "Simulation",
-  components: { SimulationMenu, Grid, AddSimulationInfo },
+  components: { AddSimulationInfo, SimulationMenu, Grid },
   data() {
     return {
       widthNodes: [],
@@ -45,6 +48,7 @@ export default {
       waitInfo: false,
       time: "",
       simulationInfo: false,
+      panzoom: null,
     };
   },
   methods: {
@@ -52,14 +56,23 @@ export default {
       this.$root.$emit("TimeWait", this.time);
       this.waitInfo = false;
     },
+    zoomIn() {
+      this.panzoom.zoomIn();
+    },
+    zoomOut() {
+      this.panzoom.zoomOut();
+    },
   },
   mounted() {
     console.log(this.simulationInfo);
+    this.panzoom = Panzoom(document.getElementById("Grid"), {
+      maxScale: 5,
+    });
     this.$root.$on("Wait", () => {
       this.waitInfo = true;
     });
-    this.$root.$on("simulationInfoAdd",()=>{
-      this.simulationInfo=true;
+    this.$root.$on("simulationInfoAdd", () => {
+      this.simulationInfo = true;
     });
   },
   created() {

@@ -23,7 +23,7 @@
         </v-btn>
       </template>
     </v-snackbar>
-    <v-overlay :value="sensorForm">
+    <v-overlay :value="sensorForm" light="true" dark="false">
       <AddSensor
         :positions="sensorPositionNodes"
         :triggerArea="sensorTriggerNodes"

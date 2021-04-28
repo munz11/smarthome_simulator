@@ -72,7 +72,7 @@ export default {
           console.log(frame);
           this.stompClient.subscribe("/topic/greetings", tick => {
             console.log(tick);
-            this.received_messages.push(JSON.parse(tick.body).content);
+            this.received_messages.push(tick.body);
           });
         },
         error => {

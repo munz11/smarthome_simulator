@@ -1,7 +1,7 @@
 <template>
   <div>
-    <v-card height="400" width="200" class="mx-auto">
-      <v-navigation-drawer permanent>
+     <v-card v-resize="onResize" :height="y" width="200" class="mx-auto">
+      <v-navigation-drawer absolute permanent left>
         <v-list-item>
           <v-list-item-content>
             <v-list-item-title class="title">Options </v-list-item-title>
@@ -19,7 +19,7 @@
           </v-list-item>
         </v-list>
       </v-navigation-drawer>
-    </v-card>
+     </v-card>
   </div>
 </template>
 
@@ -32,12 +32,16 @@ export default {
         { title: "Clear", eventName: "gridClear"},
         { title: "Add Sensor", eventName: "gridAddSensor"},
         { title: "Add Agent", eventName: "gridAddAgent"}
-      ]
+      ],
+      y:window.innerHeight-57
     }
   },
   methods: {
     executeEvent(eventName){
       this.$root.$emit(eventName);
+    },
+    onResize(){
+      this.y=window.innerHeight-57;
     }
   }
 };

@@ -1,19 +1,21 @@
 <template>
-  <div>
-    <tbody>
-      <tr v-for="i in row" :id="'row' + '-' + i" v-bind:key="i">
-        <td
-          class="unvisited"
-          v-for="j in col"
-          :id="j + '-' + i"
-          v-bind:key="j"
-          @mouseover="addWall(j + '-' + i)"
-          v-on:click.exact="addObject(j + '-' + i)"
-          v-on:dblclick.exact="addSensorTrigger(j + '-' + i)"
-          v-tooltip.hover.focus="j + '-' + i "
-        ></td>
-      </tr>
-    </tbody>
+  <div v-resize="onResize" :height="y">
+    <div id="Grid">
+      <tbody>
+        <tr v-for="i in row" :id="'row' + '-' + i" v-bind:key="i">
+          <td
+            class="unvisited"
+            v-for="j in col"
+            :id="j + '-' + i"
+            v-bind:key="j"
+            @mouseover="addWall(j + '-' + i)"
+            v-on:click.exact="addObject(j + '-' + i)"
+            v-on:dblclick.exact="addSensorTrigger(j + '-' + i)"
+            v-tooltip.hover.focus="j + '-' + i"
+          ></td>
+        </tr>
+      </tbody>
+    </div>
     <v-snackbar v-model="SnackBar" timeout="-1">
       {{ text }}
 
@@ -23,7 +25,7 @@
         </v-btn>
       </template>
     </v-snackbar>
-    <v-overlay :value="sensorForm" light="true" dark="false">
+    <v-overlay :value="sensorForm" :light="true" :dark="false">
       <AddSensor
         :positions="sensorPositionNodes"
         :triggerArea="sensorTriggerNodes"
@@ -37,15 +39,18 @@
 import wall from "@/models/wall";
 import position from "@/models/position";
 import AddSensor from "@/components/widgets/addSensor.vue";
+import Panzoom from "@panzoom/panzoom";
 
 export default {
   name: "Grid",
-  props: ["widthNodes", "heightNodes","editPlan"],
+  props: ["widthNodes", "heightNodes", "editPlan"],
   components: {
     AddSensor,
   },
   data() {
     return {
+      x: window.innerWidth,
+      y: window.innerHeight - 57,
       row: this.heightNodes,
       col: this.widthNodes,
       occupiedNodes: [],
@@ -58,10 +63,14 @@ export default {
       objectBeingAdded: "wall",
       sensorForm: false,
       multiwall: false,
-      selectedNode:""
+      selectedNode: "",
+      panzoom: null,
     };
   },
   methods: {
+    onResize() {
+      this.y = window.innerHeight - 57;
+    },
     addObject(id) {
       if (this.editPlan) {
         let l = document.getElementById(id);
@@ -76,7 +85,10 @@ export default {
         if (this.objectBeingAdded == "wall") {
           this.multiwall = !this.multiwall;
         }
-      }else if(this.objectBeingAdded==="GoTo" || this.objectBeingAdded==="Interact"){
+      } else if (
+        this.objectBeingAdded === "GoTo" ||
+        this.objectBeingAdded === "Interact"
+      ) {
         this.selectedNode = id;
         let l = document.getElementById(id);
         l.setAttribute("class", "Selected");
@@ -130,6 +142,7 @@ export default {
       }
       this.occupiedNodes = [];
       this.$store.commit("clearAllInfoOnGrid");
+      this.updateGridToStore(); 
     },
     alertSensorForm() {
       this.sensorForm = true;
@@ -143,25 +156,25 @@ export default {
       this.sensorTriggerNodes.clear();
       this.sensorPositionNodes.clear();
     },
-    updateAgentTileForSimulation(newTile){
+    updateAgentTileForSimulation(newTile) {
       let l = document.getElementById(this.lastAddedAgentID);
-      l.setAttribute("class","unvisited");
+      l.setAttribute("class", "unvisited");
       l = document.getElementById(newTile);
-      l.setAttribute("class","agent");
-      this.lastAddedAgentID=newTile;
+      l.setAttribute("class", "agent");
+      this.lastAddedAgentID = newTile;
     },
     closeSnackBar() {
       if (this.objectBeingAdded === "sensorPosition") {
         this.alertSensorForm();
-      } else if (this.objectBeingAdded === "GoTo"){
-        this.$root.$emit("TileGoTo",this.selectedNode);
+      } else if (this.objectBeingAdded === "GoTo") {
+        this.$root.$emit("TileGoTo", this.selectedNode);
         this.updateAgentTileForSimulation(this.selectedNode);
-        this.selectedNode="";
-      } else if(this.objectBeingAdded=== "Interact"){
-        this.$root.$emit("SensorInteract",this.selectedNode);
-              let l = document.getElementById(this.selectedNode);
-      l.setAttribute("class","sensorPosition");
-        this.selectedNode="";
+        this.selectedNode = "";
+      } else if (this.objectBeingAdded === "Interact") {
+        this.$root.$emit("SensorInteract", this.selectedNode);
+        let l = document.getElementById(this.selectedNode);
+        l.setAttribute("class", "sensorPosition");
+        this.selectedNode = "";
       }
       this.objectBeingAdded = "wall";
       this.SnackBar = false;
@@ -175,7 +188,7 @@ export default {
     updateGridToStore() {
       let agent = this.$store.state.agent;
       this.updateTile(agent, "agent");
-      this.lastAddedAgentID = agent.x.toString() + "-"+ agent.y.toString();
+      this.lastAddedAgentID = agent.x.toString() + "-" + agent.y.toString();
       let walls = this.$store.state.walls;
       for (let i = 0; i < walls.length; i++) {
         this.updateTile(walls[i].position, "wall");
@@ -189,7 +202,16 @@ export default {
     },
   },
   mounted() {
+    this.panzoom = Panzoom(document.getElementById("Grid"), {
+      maxScale: 5,
+    });
     this.updateGridToStore();
+    this.$root.$on("gridZoomIn", () => {
+      this.panzoom.zoomIn();
+    });
+    this.$root.$on("gridZoomOut", () => {
+      this.panzoom.zoomOut();
+    });
     this.$root.$on("gridClear", () => {
       this.clear();
     });
@@ -205,18 +227,19 @@ export default {
       this.text = "Finish adding the agent.";
       this.btnText = "Done";
     });
-    this.$root.$on("GoTo",()=>{
-      this.objectBeingAdded ="GoTo";
-      this.SnackBar= true;
-      this.text="Select tile to which you want the agent to move to.";
+    this.$root.$on("GoTo", () => {
+      this.objectBeingAdded = "GoTo";
+      this.SnackBar = true;
+      this.text = "Select tile to which you want the agent to move to.";
       this.btnText = "Done";
     });
-    this.$root.$on("Interact",()=>{
-      this.objectBeingAdded="Interact";
-      this.SnackBar=true;
-      this.text ="Select the sensor you want agent to interact with, the selected tile will turn red.";
+    this.$root.$on("Interact", () => {
+      this.objectBeingAdded = "Interact";
+      this.SnackBar = true;
+      this.text =
+        "Select the sensor you want agent to interact with, the selected tile will turn red.";
       this.btnText = "Done";
-    })
+    });
   },
 };
 </script>
@@ -310,7 +333,7 @@ export default {
   width: 25px;
   height: 25px;
 }
-@keyframes makeSelected{
+@keyframes makeSelected {
   from {
     /* transform: scale(0.5); */
     background-color: rgba(253, 253, 253, 0.89);

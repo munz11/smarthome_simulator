@@ -55,10 +55,10 @@ export default {
       this.y = window.innerHeight - 57;
     },
     zoomIn() {
-      this.$emit("gridZoomIn");
+      this.$root.$emit("gridZoomIn");
     },
     zoomOut() {
-      this.$emit("gridZoomOut");
+      this.$root.$emit("gridZoomOut");
     },
   },
 };

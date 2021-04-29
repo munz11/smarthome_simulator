@@ -2,30 +2,33 @@
   <div class="Simulation">
     <v-container fluid fill-height>
       <v-row>
-        <SimulationMenu @gridZoomIn="zoomIn" @gridZoomOut="zoomOut" />
-        <div id="Grid">
+        <SimulationMenu />
           <Grid
             v-bind:widthNodes="widthNodes"
             v-bind:heightNodes="heightNodes"
             :editPlan="editPlan"
           />
-        </div>
       </v-row>
     </v-container>
-    <v-overlay :value="waitInfo" light="true" dark="false">
+    <v-overlay :value="waitInfo" :light="true" :dark="false">
       <v-card class="mx-auto" max-width="500" outlined elevation="2" shaped>
         <v-card-title>Enter time duration for wait</v-card-title>
-
-        <v-list-item>
-          <label>Time: </label>
-          <input type="text" class="form-control" v-model="time" />
-        </v-list-item>
+        <v-card-text>
+          <v-form v-model="timeValid">
+            <v-text-field
+              label="Time"
+              v-model="time"
+              required
+              :rules="[(v) => !!v || 'Required']"
+            ></v-text-field>
+          </v-form>
+        </v-card-text>
         <v-card-actions>
-          <v-btn outlined rounded text @click="submitWait"> Submit </v-btn>
+          <v-btn outlined rounded text :disabled="!timeValid" @click="submitWait"> Submit </v-btn>
         </v-card-actions>
       </v-card>
     </v-overlay>
-    <v-overlay :value="simulationInfo" light="true" dark="false">
+    <v-overlay :value="simulationInfo" :light="true" :dark="false">
       <AddSimulationInfo @simulationClose="simulationInfo = false" />
     </v-overlay>
   </div>
@@ -35,7 +38,6 @@
 import SimulationMenu from "@/components/widgets/simulationMenu.vue";
 import Grid from "@/components/widgets/grid.vue";
 import AddSimulationInfo from "@/components/widgets/addSimulationInfo.vue";
-import Panzoom from "@panzoom/panzoom";
 
 export default {
   name: "Simulation",
@@ -48,26 +50,17 @@ export default {
       waitInfo: false,
       time: "",
       simulationInfo: false,
-      panzoom: null,
+      timeValid: true
     };
   },
   methods: {
     submitWait() {
       this.$root.$emit("TimeWait", this.time);
       this.waitInfo = false;
-    },
-    zoomIn() {
-      this.panzoom.zoomIn();
-    },
-    zoomOut() {
-      this.panzoom.zoomOut();
-    },
+    }
   },
   mounted() {
     console.log(this.simulationInfo);
-    this.panzoom = Panzoom(document.getElementById("Grid"), {
-      maxScale: 5,
-    });
     this.$root.$on("Wait", () => {
       this.waitInfo = true;
     });

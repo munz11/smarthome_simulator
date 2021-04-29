@@ -30,7 +30,7 @@
           </v-list-item-content>
         </v-list-item>
       </v-list>
-      <v-divider />
+      <v-divider/>
       <v-list-item>
         <AddInput />
       </v-list-item>
@@ -50,7 +50,7 @@ export default {
         { title: "Wait", eventName: "Wait" },
         { title: "Interact", eventName: "Interact" },
       ],
-      y: window.innerHeight - 57,
+      y: window.innerHeight - 30,
     };
   },
   methods: {
@@ -58,13 +58,13 @@ export default {
       this.$root.$emit(eventName);
     },
     onResize() {
-      this.y = window.innerHeight - 57;
+      this.y = window.innerHeight - 30;
     },
     zoomIn() {
-      this.$emit("gridZoomIn");
+      this.$root.$emit("gridZoomIn");
     },
     zoomOut() {
-      this.$emit("gridZoomOut");
+      this.$root.$emit("gridZoomOut");
     }
   },
 };

@@ -42,7 +42,7 @@ export default {
           value:"walkable"
         },
         {
-          text: "Trigger Frequency",
+          text: "Trigger Frequency (ns)",
           sortable: true,
           value: "triggerFrequency",
         }]

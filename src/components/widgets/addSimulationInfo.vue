@@ -2,52 +2,72 @@
   <div>
     <v-card class="mx-auto" max-width="500" outlined elevation="2" shaped>
       <v-card-title>Please enter details for the simulation</v-card-title>
-      <v-list-item>
-        <label>Date:</label>
-        <v-text-field
-          v-model="date"
-          outlined
-          hint="Format: yyyy-mm-dd"
-        ></v-text-field>
-      </v-list-item>
-      <v-list-item>
-        <label>Time: </label>
-        <v-text-field
-          v-model="time"
-          outlined
-          hint="Format: HH:mm:ss"
-        ></v-text-field>
-      </v-list-item>
-      <v-list-item>
-        <v-checkbox
-          v-model="instantSimulation"
-          label="Instant Simulation"
-        ></v-checkbox>
-      </v-list-item>
-      <v-list-item>
-        <label>Relative Time: </label>
-        <v-text-field v-model="relativeTime" outlined></v-text-field>
-      </v-list-item>
-      <v-list-item>
-        <v-checkbox v-model="mqttOutput" label="Mqtt Output"></v-checkbox>
-      </v-list-item>
-      <v-list-item>
-        <label>Mqtt Host: </label>
-        <v-text-field v-model="mqttHost" outlined></v-text-field>
-      </v-list-item>
-      <v-list-item>
-        <label>Mqtt Port: </label>
-        <v-text-field v-model="mqttPort" outlined></v-text-field>
-      </v-list-item>
-      <v-list-item>
-        <label>Root Topic: </label>
-        <v-text-field v-model="rootTopic" outlined></v-text-field>
-      </v-list-item>
+      <v-card-text>
+        <v-form v-model="isValid">
+          <v-row>
+            <v-col>
+              <v-text-field
+                label="Date"
+                v-model="date"
+                required
+                :rules="[(v) => !!v || 'Required']"
+                hint="Format: yyyy-mm-dd"
+              ></v-text-field>
+            </v-col>
+            <v-col>
+              <v-text-field
+                label="Time"
+                v-model="time"
+                required
+                hint="Format: HH:mm:ss"
+                :rules="[(v) => !!v || 'Required']"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+          <v-checkbox
+            v-model="instantSimulation"
+            label="Instant Simulation"
+          ></v-checkbox>
+          <v-text-field
+            label="Relative Time"
+            v-model="relativeTime"
+            required
+            :rules="[(v) => !!v || 'Required']"
+          ></v-text-field>
+          <v-checkbox v-model="mqttOutput" label="Mqtt Output"></v-checkbox>
+          <v-row>
+            <v-col>
+              <v-text-field
+                label="Mqtt Host"
+                v-model="mqttHost"
+                required
+                :rules="[(v) => !!v || 'Required']"
+              ></v-text-field>
+            </v-col>
+            <v-col>
+              <v-text-field
+                label="Mqtt Port"
+                v-model="mqttPort"
+                required
+                :rules="[(v) => !!v || 'Required']"
+              ></v-text-field>
+            </v-col>
+            <v-col>
+              <v-text-field
+                label="Root Topic"
+                v-model="rootTopic"
+                required
+                :rules="[(v) => !!v  || 'Required']"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </v-form>
+      </v-card-text>
       <v-card-actions>
-        <v-btn outlined rounded text @click="submit"> Submit</v-btn>
+        <v-btn outlined rounded text :disabled="!isValid" @click="submit"> Submit</v-btn>
       </v-card-actions>
     </v-card>
-        <v-snackbar v-model="SnackBar" timeout="-1">
+    <v-snackbar v-model="SnackBar" timeout="-1">
       {{ text }}
 
       <template v-slot:action="{ attrs }">
@@ -83,9 +103,10 @@ export default {
       mqttHost: "broker.hivemq.com",
       mqttPort: "1883",
       rootTopic: "smartHome",
-      text:"",
-      btnText:"",
-      SnackBar:false
+      text: "",
+      btnText: "",
+      SnackBar: false,
+      isValid: true
     };
   },
   methods: {
@@ -104,32 +125,35 @@ export default {
         parseInt(timeobject[2])
       );
       let simulationJson = {
-        "clock": dateObject.toISOString(),
-        "instantSimulation": this.instantSimulation,
-        "relativeTime": this.relativeTime,
-        "mqttOutput":this.mqttOutput,
-        "mqttHost":this.mqttHost,
-        "mqttPort":this.mqttPort,
-        "rootTopic":this.rootTopic
+        clock: dateObject.toISOString(),
+        instantSimulation: this.instantSimulation,
+        relativeTime: this.relativeTime,
+        mqttOutput: this.mqttOutput,
+        mqttHost: this.mqttHost,
+        mqttPort: this.mqttPort,
+        rootTopic: this.rootTopic,
       };
-      axios.post(this.$smartHomeBackend.getUrlSimulation(), simulationJson)
-           .then((res) =>{
-             this.text="The simulation has started, the data can be found at the mqtt host:"+this.mqttHost;
-             this.btnText="Close";
-             this.SnackBar=true;
-             this.$emit("simulationClose");
-           })
-           .catch(err=>{
-             this.text=err;
-             this.btnText="Close";
-             this.SnackBar=true;
-           })
+      axios
+        .post(this.$smartHomeBackend.getUrlSimulation(), simulationJson)
+        .then((res) => {
+          this.text =
+            "The simulation has started, the data can be found at the mqtt host:" +
+            this.mqttHost;
+          this.btnText = "Close";
+          this.SnackBar = true;
+          this.$emit("simulationClose");
+        })
+        .catch((err) => {
+          this.text = err;
+          this.btnText = "Close";
+          this.SnackBar = true;
+        });
     },
-    closeSnackBar(){
-      this.text="";
-      this.btnText="";
-      this.SnackBar=false;
-    }
+    closeSnackBar() {
+      this.text = "";
+      this.btnText = "";
+      this.SnackBar = false;
+    },
   },
 };
 </script>

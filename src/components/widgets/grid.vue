@@ -89,6 +89,10 @@ export default {
         this.objectBeingAdded === "GoTo" ||
         this.objectBeingAdded === "Interact"
       ) {
+        if(!this.selectedNode=="" && this.objectBeingAdded === "GoTo" ){
+          let l=document.getElementById(this.selectedNode);
+          l.setAttribute("class", "unvisited");
+        }
         this.selectedNode = id;
         let l = document.getElementById(id);
         l.setAttribute("class", "Selected");

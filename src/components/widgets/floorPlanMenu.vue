@@ -42,7 +42,7 @@ export default {
       items: [
         { title: "Clear", eventName: "gridClear" },
         { title: "Add Sensor", eventName: "gridAddSensor" },
-        { title: "Add Agent", eventName: "gridAddAgent" },
+        { title: "Move Agent", eventName: "gridAddAgent" },
       ],
       y: window.innerHeight - 57,
     };

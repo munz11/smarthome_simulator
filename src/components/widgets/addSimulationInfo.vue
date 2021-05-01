@@ -34,6 +34,13 @@
             required
             :rules="[(v) => !!v || 'Required']"
           ></v-text-field>
+          <v-text-field
+            label="Seed"
+            v-model="seed"
+            required
+            hint="156241"
+            :rules="[(v) => !!v || 'Required']"
+          ></v-text-field>
           <v-checkbox v-model="mqttOutput" label="Mqtt Output"></v-checkbox>
           <v-row>
             <v-col>
@@ -57,14 +64,16 @@
                 label="Root Topic"
                 v-model="rootTopic"
                 required
-                :rules="[(v) => !!v  || 'Required']"
+                :rules="[(v) => !!v || 'Required']"
               ></v-text-field>
             </v-col>
           </v-row>
         </v-form>
       </v-card-text>
       <v-card-actions>
-        <v-btn outlined rounded text :disabled="!isValid" @click="submit"> Submit</v-btn>
+        <v-btn outlined rounded text :disabled="!isValid" @click="submit">
+          Submit</v-btn
+        >
       </v-card-actions>
     </v-card>
     <v-snackbar v-model="SnackBar" timeout="-1">
@@ -106,7 +115,8 @@ export default {
       text: "",
       btnText: "",
       SnackBar: false,
-      isValid: true
+      isValid: true,
+      seed:null,
     };
   },
   methods: {
@@ -132,6 +142,7 @@ export default {
         mqttHost: this.mqttHost,
         mqttPort: this.mqttPort,
         rootTopic: this.rootTopic,
+        seed: this.seed
       };
       axios
         .post(this.$smartHomeBackend.getUrlSimulation(), simulationJson)
@@ -148,11 +159,17 @@ export default {
           this.btnText = "Close";
           this.SnackBar = true;
         });
+      this.text =
+        "The simulation has started, the data can be found at the mqtt host:" +
+        this.mqttHost;
+      this.btnText = "Close";
+      this.SnackBar = true;
     },
     closeSnackBar() {
       this.text = "";
       this.btnText = "";
       this.SnackBar = false;
+      this.$emit("simulationClose");
     },
   },
 };

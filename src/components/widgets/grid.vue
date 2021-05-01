@@ -228,7 +228,7 @@ export default {
     this.$root.$on("gridAddAgent", () => {
       this.objectBeingAdded = "agent";
       this.SnackBar = true;
-      this.text = "Finish adding the agent.";
+      this.text = "Finish moving the agent.";
       this.btnText = "Done";
     });
     this.$root.$on("GoTo", () => {

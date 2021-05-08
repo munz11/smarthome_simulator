@@ -94,10 +94,7 @@ export default {
       if (this.action == "wall" && this.wall) {
         if (this.displayedNodes.get(ID).type == "empty") {
           this.displayedNodes.get(ID).setType("wall");
-          this.$store.commit(
-            "addWall",
-            this.getPosition(ID)
-          );
+          this.$store.commit("addWall", this.getPosition(ID));
           this.updateClass(ID);
         }
       }
@@ -106,10 +103,7 @@ export default {
       if (this.action == "wall" && this.wall) {
         if (this.displayedNodes.get(ID).type == "empty") {
           this.displayedNodes.get(ID).setType("wall");
-          this.$store.commit(
-            "addWall",
-            this.getPosition(ID)
-          );
+          this.$store.commit("addWall", this.getPosition(ID));
           this.updateClass(ID);
         }
         this.wall = false; // so this time need to add wall to this node and then stop adding
@@ -141,6 +135,35 @@ export default {
         }
       }
     },
+    setAllNodesToEmpty() {
+      this.displayedNodes
+        .get(this.getID(this.$store.state.agent))
+        .setType("empty");
+      this.updateClass(this.getID(this.$store.state.agent));
+      let walls = this.$store.state.walls;
+      for (let i = 0; i < walls.length; i++) {
+        this.displayedNodes.get(this.getID(walls[i])).setType("empty");
+        this.updateClass(this.getID(walls[i]));
+      }
+      let sensors = this.$store.state.sensors;
+      for (let i = 0; i < sensors.length; i++) {
+        for (let j = 0; j < sensors[i].positions.length; j++) {
+          this.displayedNodes
+            .get(this.getID(sensors[i].positions[j]))
+            .setType("empty");
+          this.updateClass(this.getID(sensors[i].positions[j]));
+        }
+      }
+    },
+    clear() {
+      this.setAllNodesToEmpty();
+      this.$store.commit("clearAllInfoOnGrid");
+      this.updateNodesToStore();
+      this.displayedNodes
+        .get(this.getID(this.$store.state.agent))
+        .setType("agent");
+      this.updateClass(this.getID(this.$store.state.agent));
+    },
   },
   beforeMount() {
     for (let i = 0; i < this.maxRow; i++) {
@@ -153,6 +176,9 @@ export default {
   mounted() {
     this.calculateNodesDisplayed();
     this.updateNodesToStore();
+    this.$root.$on("gridClear", () => {
+      this.clear();
+    });
   },
 };
 </script>

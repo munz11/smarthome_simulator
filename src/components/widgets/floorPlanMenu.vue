@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card v-resize="onResize" :height="y" :width="x" class="mx-auto">
+    <v-card v-resize="onResize" :height="y" :width="x">
         <v-list-item>
           <v-list-item-content>
             <v-list-item-title class="title">Options </v-list-item-title>

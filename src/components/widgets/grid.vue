@@ -13,10 +13,19 @@
             @mouseover="continueWall(col + '-' + row)"
             @mouseup="stopWall(col + '-' + row)"
             @dblclick="dbClick(col + '-' + row)"
+            @click="click(col + '-' + row)"
           ></td>
         </tr>
       </tbody>
     </v-card>
+    <v-snackbar v-model="snackBar" timeout="-1" bottom>
+      {{ text }}
+      <template v-slot:action="{ attrs }">
+        <v-btn color="pink" text v-bind="attrs" @click="closeSnackBar">
+          {{ btnText }}
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -38,6 +47,9 @@ export default {
       maxCol: this.$store.state.floorPlanDetails.width,
       action: "wall",
       wall: false,
+      snackBar: false,
+      text: "",
+      btnText: "",
     };
   },
   methods: {
@@ -67,6 +79,29 @@ export default {
       for (let j = 0; j < displayRow; j++) {
         this.currentRows.push(j);
       }
+    },
+    closeSnackBar() {
+      this.action = "wall";
+      this.snackBar = false;
+      this.text = "";
+      this.btnText = "";
+    },
+    click(ID) {
+      if (
+        this.action == "agent" &&
+        this.displayedNodes.get(ID).type == "empty"
+      ) {
+        this.updateAgentNodes(ID);
+      }
+    },
+    updateAgentNodes(ID) {
+      this.displayedNodes
+        .get(this.getID(this.$store.state.agent))
+        .setType("empty");
+      this.updateClass(this.getID(this.$store.state.agent));
+      this.displayedNodes.get(ID).setType("agent");
+      this.updateClass(ID);
+      this.$store.commit("updateAgent", this.getPosition(ID));
     },
     dbClick(ID) {
       if (this.action == "wall" && this.displayedNodes.get(ID).type == "wall") {
@@ -164,6 +199,12 @@ export default {
         .setType("agent");
       this.updateClass(this.getID(this.$store.state.agent));
     },
+    moveAgent() {
+      this.action = "agent";
+      this.text = "Move the agent by clicking on a new tile";
+      this.btnText = "Done";
+      this.snackBar = true;
+    },
   },
   beforeMount() {
     for (let i = 0; i < this.maxRow; i++) {
@@ -178,6 +219,9 @@ export default {
     this.updateNodesToStore();
     this.$root.$on("gridClear", () => {
       this.clear();
+    });
+    this.$root.$on("gridMoveAgent", () => {
+      this.moveAgent();
     });
   },
 };

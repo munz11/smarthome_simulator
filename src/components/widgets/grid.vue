@@ -56,6 +56,7 @@ export default {
     onResize() {
       this.y = window.innerHeight - 57;
       this.x = window.innerWidth * 0.83;
+      this.calculateNodesDisplayed();
     },
     getClass(ID) {
       return this.displayedNodes.get(ID).type;
@@ -65,6 +66,8 @@ export default {
       l.setAttribute("class", this.displayedNodes.get(ID).type);
     },
     calculateNodesDisplayed() {
+      this.currentCols=[];
+      this.currentRows=[];
       let displayCol = Math.floor((42 * this.x) / 1062);
       let displayRow = Math.floor((21 * this.y) / 553);
       if (displayCol > this.maxCol) {
@@ -201,10 +204,63 @@ export default {
     },
     moveAgent() {
       this.action = "agent";
-      this.text = "Move the agent by clicking on a new tile";
+      this.text = "Move the agent by clicking on a new tile.";
       this.btnText = "Done";
       this.snackBar = true;
     },
+    panLeft(){
+      let val = this.currentCols.length;
+      if((this.maxCol-this.currentCols.length)>0){
+        let el = this.currentCols[val-1]+1
+        this.currentCols.shift();
+        this.currentCols.push(el);
+      }
+      else{
+        this.text="Cannot move towards left.";
+        this.btnText="Close";
+        this.snackBar=true;
+      }
+    },
+    panRight(){
+      let val = this.currentCols.length;
+      if((this.maxCol-this.currentCols.length)>0 && (this.currentCols[0]!==0)){
+        let el = this.currentCols[0]-1
+        this.currentCols.pop()
+        this.currentCols.unshift(el);
+      }
+      else{
+        this.text="Cannot move towards right.";
+        this.btnText="Close";
+        this.snackBar=true;
+      }
+    },
+    panDown(){
+      let val = this.currentRows.length;
+      if((this.maxRow-this.currentRows.length)>0){
+        let el = this.currentRows[val-1]+1
+        this.currentRows.shift();
+        this.currentRows.push(el);
+      }
+      else{
+        this.text="Cannot move down.";
+        this.btnText="Close";
+        this.snackBar=true;
+      }
+    },
+    panUp(){
+      let val = this.currentRows.length;
+      if((this.maxRow-this.currentRows.length)>0 && (this.currentRows[0]!==0)){
+        let el = this.currentRows[0]-1
+        this.currentRows.pop()
+        this.currentRows.unshift(el);
+      }
+      else{
+        this.text="Cannot move up.";
+        this.btnText="Close";
+        this.snackBar=true;
+      }
+    }
+
   },
   beforeMount() {
     for (let i = 0; i < this.maxRow; i++) {
@@ -223,6 +279,19 @@ export default {
     this.$root.$on("gridMoveAgent", () => {
       this.moveAgent();
     });
+    this.$root.$on("gridPanLeft", () => {
+      this.panLeft();
+    });
+    this.$root.$on("gridPanRight", () => {
+      this.panRight();
+    });
+    this.$root.$on("gridPanDown", () => {
+      this.panDown();
+    });
+    this.$root.$on("gridPanUp", () => {
+      this.panUp();
+    });
+
   },
 };
 </script>

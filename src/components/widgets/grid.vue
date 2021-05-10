@@ -26,16 +26,25 @@
         </v-btn>
       </template>
     </v-snackbar>
+    <v-overlay :value="sensorForm" :light="true" :dark="false">
+      <AddSensor
+        :physicalArea="physicalArea"
+        :interactArea="interactArea"
+        @closeSensorForm="completeAddSensor"
+      />
+    </v-overlay>
   </div>
 </template>
 
 <script>
 import node from "@/models/node";
 import position from "@/models/position";
+import AddSensor from "@/components/widgets/addSensor.vue";
 
 export default {
   name: "Grid",
   props: ["editGrid"],
+  components: { AddSensor },
   data() {
     return {
       x: window.innerWidth * 0.83,
@@ -50,6 +59,9 @@ export default {
       snackBar: false,
       text: "",
       btnText: "",
+      physicalArea:[],
+      interactArea:[],
+      sensorForm:false,
     };
   },
   methods: {
@@ -64,6 +76,7 @@ export default {
     updateClass(ID) {
       let l = document.getElementById(ID);
       l.setAttribute("class", this.displayedNodes.get(ID).type);
+      console.log(ID);
     },
     calculateNodesDisplayed() {
       this.currentCols=[];
@@ -144,7 +157,7 @@ export default {
           this.$store.commit("addWall", this.getPosition(ID));
           this.updateClass(ID);
         }
-        this.wall = false; // so this time need to add wall to this node and then stop adding
+        this.wall = false; 
       }
     },
     getID(position) {
@@ -166,9 +179,9 @@ export default {
       }
       let sensors = this.$store.state.sensors;
       for (let i = 0; i < sensors.length; i++) {
-        for (let j = 0; j < sensors[i].positions.length; j++) {
+        for (let j = 0; j < sensors[i].interactArea.length; j++) {
           this.displayedNodes
-            .get(this.getID(sensors[i].positions[j]))
+            .get(this.getID(sensors[i].interactArea[j]))
             .setSensor("sensor", sensors[i].name);
         }
       }
@@ -259,6 +272,9 @@ export default {
         this.btnText="Close";
         this.snackBar=true;
       }
+    },
+    completeAddSensor(){
+      this.sensorForm=false;
     }
 
   },
@@ -291,7 +307,9 @@ export default {
     this.$root.$on("gridPanUp", () => {
       this.panUp();
     });
-
+    this.$root.$on("gridAddSensor",()=>{
+      this.sensorForm=true;
+    })
   },
 };
 </script>

@@ -8,10 +8,10 @@
             label="Name"
             v-model="name"
             required
-            :rules="[(v) => !!v || 'Required']"
+            :rules="nameRules"
           ></v-text-field>
           <label>Type: </label>
-          <select v-model="type" class="form-control" required :rules="[(v) => !!v || 'Required']">
+          <select v-model="type" class="form-control" required :rules="typeRules">
             <option
               v-for="option in typeOptions"
               v-bind:key="option.value"
@@ -21,12 +21,12 @@
             </option>
           </select>
           <v-checkbox v-model="walkable" label="walkable"></v-checkbox>
-          <v-text-field
+          <v-text-field 
             label="Trigger Frequency (s)"
             v-model="triggerFrequency"
             required
             hint="e.g: 5"
-            :rules="[(v) => !!v || 'Required']"
+            :rules="triggerFrequencyRules"
           ></v-text-field>
         </v-form>
       </v-card-text>
@@ -44,30 +44,34 @@ import position from "../../models/position";
 import sensor from "../../models/sensor";
 export default {
   name: "AddSensor",
-  props: ["positions", "triggerArea"],
+  props: ["physicalArea", "interactArea"],
   data() {
     return {
       name: "",
       triggerFrequency: "",
       walkable: "true",
-      typeOptions: [
-        { value: 1, text: "Passive", send: "entities.SensorPassive" },
-        { value: 2, text: "Active", send: "entities.SensorActive" },
-      ],
+      typeOptions:[],
       type: "",
       isValid: true,
+      nameRules: [(v) => !!v || 'Required'],
+      typeRules: [(v) => !!v || 'Required'],
+      triggerFrequencyRules: [(v) =>
+          /^\d*$/.test(v) ||
+          "Only numbers are allowed"]
     };
   },
   methods: {
     submit() {
       let sensorObject = new sensor(
         this.name,
-        this.getListPositions(this.positions),
-        this.getListPositions(this.triggerArea),
-        parseInt(this.triggerFrequency) * 1000000000,
+        this.getListPositions(this.physicalArea),
+        this.getListPositions(this.interactArea),
+        this.triggerFrequency == "" ? null : parseInt(this.triggerFrequency) * 1000000000,
         this.typeOptions.find((option) => option.value == this.type).send,
-        this.walkable == "true" ? true : false
+        this.walkable == "true" ? true : false,
+        this.isPassiveType(this.type)? "passive" : "active"
       );
+      console.log(sensorObject);
       this.$store.commit("addSensor", sensorObject);
       this.$emit("closeSensorForm");
     },
@@ -81,14 +85,31 @@ export default {
       });
       return positionObjects;
     },
-    getType() {
-      var values = this.typeOptions.map(function (o) {
-        return o;
-      });
-      var index = values.indexOf(this.selected);
-      this.type = this.typeOptions[index];
+    isPassiveType(){
+      if(this.$store.state.passiveSensors.includes(this.typeOptions.find((option) => option.value == this.type).send)){
+        return true
+      }
+      return false
+      
     },
+    getTypeOptions(){
+      let passiveSensors = this.$store.state.passiveSensors;
+      let j = passiveSensors.length;
+      for(let i=0; i<passiveSensors.length;i++){
+        let el = passiveSensors[i].split(".");
+        this.typeOptions.push({value: i, text: el[2], send: passiveSensors[i]});
+      }
+      let activeSensors = this.$store.state.activeSensors;
+      for(let i=0; i<activeSensors.length;i++){
+        let el = activeSensors[i].split(".");
+        this.typeOptions.push({value: i+j, text: el[2], send: activeSensors[i]});
+      }
+    }
   },
+  beforeMount(){
+    this.getTypeOptions();
+    //this.triggerFrequencyRules.push((v)=>  v || 'Required');
+  }
 };
 </script>
 

@@ -2,25 +2,28 @@ import position from "./position";
 
 export default class sensor {
   name: string;
-  positions: position[];
-  triggerArea: position[];
-  triggerFrequency: number;
+  interactArea: position[];
+  physicalArea: position[];
+  triggerFrequency: number | null;
   type: string;
   walkable:boolean;
+  sensorType:string;
 
   constructor(
     name: string,
-    positions: position[],
-    triggerArea: position[],
-    triggerFrequency: number,
+    physicalArea: position[],
+    interactArea: position[],
+    triggerFrequency: number| null,
     type: string,
-    walkable:boolean
+    walkable:boolean,
+    sensorType:string,
   ) {
     this.name = name;
-    this.positions = positions;
-    this.triggerArea = triggerArea;
+    this.interactArea=interactArea;
+    this.physicalArea=physicalArea;
     this.triggerFrequency = triggerFrequency;
     this.type=type;
     this.walkable=walkable;
+    this.sensorType=sensorType;
   }
 }

@@ -42,7 +42,7 @@
     <main role="main">
       <router-view Home />
     </main>
-    <SystemStatus v-bind:systemStatus="systemStatus" />
+    <SystemStatus :systemStatus="systemStatus" />
   </div>
 </template>
 
@@ -69,9 +69,18 @@ export default {
         )
         .catch((err) => console.error(err));
     },
+    getSensorNames(){
+      axios.get(this.$smartHomeBackend.getUrlActiveSensors())
+           .then((res) => (this.$store.commit("addActiveSensors", res.data)))
+           .catch((err) => console.error(err));
+      axios.get(this.$smartHomeBackend.getUrlPassiveSensors())
+           .then((res) => (this.$store.commit("addPassiveSensors", res.data)))
+           .catch((err) => console.error(err));
+    }
   },
   mounted() {
     this.checkStatus();
+    this.getSensorNames();
     setInterval(() => {
       this.checkStatus();
     }, 1000 * 15);

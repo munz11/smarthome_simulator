@@ -7,13 +7,23 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    agent: JSON.parse(sessionStorage.getItem("agent")) || new position(0, 0), //default
-    sensors: JSON.parse(sessionStorage.getItem("sensors")) || Array<sensor>(), //need to find a better way
+    agent: JSON.parse(sessionStorage.getItem("agent")) || new position(0, 0),
+    sensors: JSON.parse(sessionStorage.getItem("sensors")) || Array<sensor>(), 
     walls: JSON.parse(sessionStorage.getItem("walls")) || Array<position>(),
-    floorPlanDetails: JSON.parse(sessionStorage.getItem("floorPlanDetails")) || new floorPlanDetails(0, 0, 0)
+    floorPlanDetails: JSON.parse(sessionStorage.getItem("floorPlanDetails")) || new floorPlanDetails(0, 0, 0),
+    passiveSensors: JSON.parse(sessionStorage.getItem("passiveSensors")) || Array<string>(),
+    activeSensors: JSON.parse(sessionStorage.getItem("activeSensors")) || Array<string>()
   },
 
   mutations: {
+    addActiveSensors(state, newActive: string[]){
+      state.activeSensors = newActive;
+      sessionStorage.setItem("activeSensors", JSON.stringify(state.activeSensors));
+    },
+    addPassiveSensors(state, newPassive: string[]){
+      state.passiveSensors = newPassive;
+      sessionStorage.setItem("passiveSensors", JSON.stringify(state.passiveSensors));
+    },
     addSensor(state, newSensor: sensor) {
       state.sensors.push(newSensor);
       sessionStorage.setItem("sensors", JSON.stringify(state.sensors));

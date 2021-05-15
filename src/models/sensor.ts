@@ -16,7 +16,7 @@ export default class sensor {
     triggerFrequency: number| null,
     type: string,
     walkable:boolean,
-    sensorType:string,
+    sensorType:string,//passive or active
   ) {
     this.name = name;
     this.interactArea=interactArea;

@@ -71,7 +71,6 @@ export default {
         this.walkable == "true" ? true : false,
         this.isPassiveType(this.type)? "passive" : "active"
       );
-      console.log(sensorObject);
       this.$store.commit("addSensor", sensorObject);
       this.$emit("closeSensorForm");
     },

@@ -26,13 +26,13 @@
         </v-btn>
       </template>
     </v-snackbar>
-    <v-overlay :value="sensorForm" :light="true" :dark="false">
+    <!--v-overlay :value="sensorForm" :light="true" :dark="false">
       <AddSensor
         :physicalArea="physicalArea"
         :interactArea="interactArea"
         @closeSensorForm="completeAddSensor"
       />
-    </v-overlay>
+    </v-overlay-->
   </div>
 </template>
 
@@ -44,7 +44,7 @@ import AddSensor from "@/components/widgets/addSensor.vue";
 export default {
   name: "Grid",
   props: ["editGrid"],
-  components: { AddSensor },
+  //components: { AddSensor },
   data() {
     return {
       x: window.innerWidth * 0.83,
@@ -59,9 +59,9 @@ export default {
       snackBar: false,
       text: "",
       btnText: "",
-      physicalArea:[],
-      interactArea:[],
-      sensorForm:false,
+      //physicalArea: [],
+      //interactArea: [],
+      //sensorForm: false,
     };
   },
   methods: {
@@ -71,16 +71,15 @@ export default {
       this.calculateNodesDisplayed();
     },
     getClass(ID) {
-      return this.displayedNodes.get(ID).type;
+      return this.displayedNodes.get(ID).getTypeofNode();
     },
     updateClass(ID) {
       let l = document.getElementById(ID);
-      l.setAttribute("class", this.displayedNodes.get(ID).type);
-      console.log(ID);
+      l.setAttribute("class", this.displayedNodes.get(ID).getTypeofNode());
     },
     calculateNodesDisplayed() {
-      this.currentCols=[];
-      this.currentRows=[];
+      this.currentCols = [];
+      this.currentRows = [];
       let displayCol = Math.floor((42 * this.x) / 1062);
       let displayRow = Math.floor((21 * this.y) / 553);
       if (displayCol > this.maxCol) {
@@ -105,23 +104,24 @@ export default {
     click(ID) {
       if (
         this.action == "agent" &&
-        this.displayedNodes.get(ID).type == "empty"
+        this.displayedNodes.get(ID).canMoveAgentHere()
       ) {
         this.updateAgentNodes(ID);
       }
     },
     updateAgentNodes(ID) {
-      this.displayedNodes
-        .get(this.getID(this.$store.state.agent))
-        .setType("empty");
-      this.updateClass(this.getID(this.$store.state.agent));
-      this.displayedNodes.get(ID).setType("agent");
-      this.updateClass(ID);
-      this.$store.commit("updateAgent", this.getPosition(ID));
+      this.displayedNodes.get(this.getID(this.$store.state.agent)).removeAgent() // remove the agent from this node
+      this.updateClass(this.getID(this.$store.state.agent)); //update the node class
+      this.displayedNodes.get(ID).setType("agent"); //update the new agent node
+      this.updateClass(ID); //update the class of new agent node
+      this.$store.commit("updateAgent", this.getPosition(ID)); //update store
     },
     dbClick(ID) {
-      if (this.action == "wall" && this.displayedNodes.get(ID).type == "wall") {
-        this.displayedNodes.get(ID).type = "empty";
+      if (
+        this.action == "wall" &&
+        this.displayedNodes.get(ID).type.includes("wall")
+      ) {
+        this.displayedNodes.get(ID).removeWall();
         this.$store.commit("removeWall", this.getPosition(ID));
         this.updateClass(ID);
       }
@@ -133,7 +133,7 @@ export default {
     startWall(ID) {
       if (
         this.action == "wall" &&
-        this.displayedNodes.get(ID).type == "empty"
+        this.displayedNodes.get(ID).canAddWallHere()
       ) {
         this.wall = true;
         this.displayedNodes.get(ID).setType("wall");
@@ -143,7 +143,7 @@ export default {
     },
     continueWall(ID) {
       if (this.action == "wall" && this.wall) {
-        if (this.displayedNodes.get(ID).type == "empty") {
+        if (this.displayedNodes.get(ID).canAddWallHere()) {
           this.displayedNodes.get(ID).setType("wall");
           this.$store.commit("addWall", this.getPosition(ID));
           this.updateClass(ID);
@@ -152,24 +152,21 @@ export default {
     },
     stopWall(ID) {
       if (this.action == "wall" && this.wall) {
-        if (this.displayedNodes.get(ID).type == "empty") {
+        if (this.displayedNodes.get(ID).canAddWallHere()) {
           this.displayedNodes.get(ID).setType("wall");
           this.$store.commit("addWall", this.getPosition(ID));
           this.updateClass(ID);
         }
-        this.wall = false; 
+        this.wall = false;
       }
     },
     getID(position) {
       return position.x.toString() + "-" + position.y.toString();
     },
     show(ID) {
-      if (this.displayedNodes.get(ID).type == "sensor") {
-        return ID + ", " + this.displayedNodes.get(ID).sensorName;
-      }
-      return ID;
+      return this.displayedNodes.get(ID).displayNodeInfo();
     },
-    updateNodesToStore() {
+    updateNodesToStore() { //assumes that the store contains the allowed node types, so no need to check if the agent or a wall can be added here
       this.displayedNodes
         .get(this.getID(this.$store.state.agent))
         .setType("agent");
@@ -177,42 +174,21 @@ export default {
       for (let i = 0; i < walls.length; i++) {
         this.displayedNodes.get(this.getID(walls[i])).setType("wall");
       }
-      let sensors = this.$store.state.sensors;
-      for (let i = 0; i < sensors.length; i++) {
-        for (let j = 0; j < sensors[i].interactArea.length; j++) {
-          this.displayedNodes
-            .get(this.getID(sensors[i].interactArea[j]))
-            .setSensor("sensor", sensors[i].name);
-        }
-      }
     },
     setAllNodesToEmpty() {
-      this.displayedNodes
-        .get(this.getID(this.$store.state.agent))
-        .setType("empty");
+      //reset all the nodes which contained something - removes agent and wall atm
+      this.displayedNodes.get(this.getID(this.$store.state.agent)).reset()
       this.updateClass(this.getID(this.$store.state.agent));
       let walls = this.$store.state.walls;
       for (let i = 0; i < walls.length; i++) {
-        this.displayedNodes.get(this.getID(walls[i])).setType("empty");
+        this.displayedNodes.get(this.getID(walls[i])).reset();
         this.updateClass(this.getID(walls[i]));
-      }
-      let sensors = this.$store.state.sensors;
-      for (let i = 0; i < sensors.length; i++) {
-        for (let j = 0; j < sensors[i].positions.length; j++) {
-          this.displayedNodes
-            .get(this.getID(sensors[i].positions[j]))
-            .setType("empty");
-          this.updateClass(this.getID(sensors[i].positions[j]));
-        }
       }
     },
     clear() {
       this.setAllNodesToEmpty();
       this.$store.commit("clearAllInfoOnGrid");
-      this.updateNodesToStore();
-      this.displayedNodes
-        .get(this.getID(this.$store.state.agent))
-        .setType("agent");
+      this.displayedNodes.get(this.getID(this.$store.state.agent)).setType("agent"); //reset agent position according to store
       this.updateClass(this.getID(this.$store.state.agent));
     },
     moveAgent() {
@@ -221,62 +197,58 @@ export default {
       this.btnText = "Done";
       this.snackBar = true;
     },
-    panLeft(){
+    panLeft() {
       let val = this.currentCols.length;
-      if((this.maxCol-this.currentCols.length)>0){
-        let el = this.currentCols[val-1]+1
+      if (this.maxCol - this.currentCols.length > 0) {
+        let el = this.currentCols[val - 1] + 1;
         this.currentCols.shift();
         this.currentCols.push(el);
-      }
-      else{
-        this.text="Cannot move towards left.";
-        this.btnText="Close";
-        this.snackBar=true;
+      } else {
+        this.text = "Cannot move towards left.";
+        this.btnText = "Close";
+        this.snackBar = true;
       }
     },
-    panRight(){
-      let val = this.currentCols.length;
-      if((this.maxCol-this.currentCols.length)>0 && (this.currentCols[0]!==0)){
-        let el = this.currentCols[0]-1
-        this.currentCols.pop()
+    panRight() {
+      if (
+        this.maxCol - this.currentCols.length > 0 &&
+        this.currentCols[0] !== 0
+      ) {
+        let el = this.currentCols[0] - 1;
+        this.currentCols.pop();
         this.currentCols.unshift(el);
-      }
-      else{
-        this.text="Cannot move towards right.";
-        this.btnText="Close";
-        this.snackBar=true;
+      } else {
+        this.text = "Cannot move towards right.";
+        this.btnText = "Close";
+        this.snackBar = true;
       }
     },
-    panDown(){
+    panDown() {
       let val = this.currentRows.length;
-      if((this.maxRow-this.currentRows.length)>0){
-        let el = this.currentRows[val-1]+1
+      if (this.maxRow - this.currentRows.length > 0) {
+        let el = this.currentRows[val - 1] + 1;
         this.currentRows.shift();
         this.currentRows.push(el);
-      }
-      else{
-        this.text="Cannot move down.";
-        this.btnText="Close";
-        this.snackBar=true;
+      } else {
+        this.text = "Cannot move down.";
+        this.btnText = "Close";
+        this.snackBar = true;
       }
     },
-    panUp(){
-      let val = this.currentRows.length;
-      if((this.maxRow-this.currentRows.length)>0 && (this.currentRows[0]!==0)){
-        let el = this.currentRows[0]-1
-        this.currentRows.pop()
+    panUp() {
+      if (
+        this.maxRow - this.currentRows.length > 0 &&
+        this.currentRows[0] !== 0
+      ) {
+        let el = this.currentRows[0] - 1;
+        this.currentRows.pop();
         this.currentRows.unshift(el);
-      }
-      else{
-        this.text="Cannot move up.";
-        this.btnText="Close";
-        this.snackBar=true;
+      } else {
+        this.text = "Cannot move up.";
+        this.btnText = "Close";
+        this.snackBar = true;
       }
     },
-    completeAddSensor(){
-      this.sensorForm=false;
-    }
-
   },
   beforeMount() {
     for (let i = 0; i < this.maxRow; i++) {
@@ -307,9 +279,6 @@ export default {
     this.$root.$on("gridPanUp", () => {
       this.panUp();
     });
-    this.$root.$on("gridAddSensor",()=>{
-      this.sensorForm=true;
-    })
   },
 };
 </script>
@@ -356,6 +325,66 @@ export default {
   /* display: inline-block; */
   background-color: rgba(255, 255, 255, 0.89);
   animation-name: makewall;
+  animation-duration: 0.5s;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease-out;
+  width: 25px;
+  height: 25px;
+}
+@keyframes makesensorphysical {
+  from {
+    /* transform: scale(0.5); */
+    background-color: rgba(253, 253, 253, 0.89);
+  }
+  to {
+    /* transform: scale(1); */
+    background-color: rgb(74, 5, 83);
+  }
+}
+.sensorPhysical {
+  /* display: inline-block; */
+  background-color: rgba(255, 255, 255, 0.89);
+  animation-name: makesensorphysical;
+  animation-duration: 0.5s;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease-out;
+  width: 25px;
+  height: 25px;
+}
+@keyframes makesensorInteract {
+  from {
+    /* transform: scale(0.5); */
+    background-color: rgba(253, 253, 253, 0.89);
+  }
+  to {
+    /* transform: scale(1); */
+    background-color: rgb(235, 32, 133);
+  }
+}
+.sensorInteract {
+  /* display: inline-block; */
+  background-color: rgba(255, 255, 255, 0.89);
+  animation-name: makesensorInteract;
+  animation-duration: 0.5s;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease-out;
+  width: 25px;
+  height: 25px;
+}
+@keyframes makesoverlap {
+  from {
+    /* transform: scale(0.5); */
+    background-color: rgba(253, 253, 253, 0.89);
+  }
+  to {
+    /* transform: scale(1); */
+    background-color: rgb(225, 59, 240);
+  }
+}
+.overlap {
+  /* display: inline-block; */
+  background-color: rgba(255, 255, 255, 0.89);
+  animation-name: makesoverlap;
   animation-duration: 0.5s;
   animation-fill-mode: forwards;
   animation-timing-function: ease-out;

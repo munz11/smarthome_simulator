@@ -100,7 +100,10 @@ export default {
     },
     updateClass(ID) {
       let l = document.getElementById(ID);
-      l.setAttribute("class", this.displayedNodes.get(ID).getTypeofNode(this.$store.state.filterText));
+      if(l!=null){
+        l.setAttribute("class", this.displayedNodes.get(ID).getTypeofNode(this.$store.state.filterText));
+      }
+      
     },
     updateClassTemp(ID, type) {
       let l = document.getElementById(ID);

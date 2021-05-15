@@ -39,11 +39,23 @@ export default class node {
     }
     getTypeofNode(filterText: string): string {
         if (filterText != "") {
-            if (this.sensorName.has(filterText) && this.type.includes("sensorPhysical")) {
-                return "sensorPhysical";
+            if (this.sensorName.has(filterText)) {
+                if(this.type.includes("sensorPhysical") &&this.type.includes("sensorInteract") ){
+                    return "overlap";
+                }else if(this.type.includes("sensorInteract")){
+                    return "interact";
+                }else if(this.type.includes("sensorPhysical")){
+                    return "sensorPhysical";
+                }
             }
-            if (this.entityName.has(filterText)&&this.type.includes("entityPhysical")) {
-                return "entityPhysical";
+            if (this.entityName.has(filterText)) {
+                if(this.type.includes("entityPhysical") &&this.type.includes("entityInteract") ){
+                    return "overlap";
+                }else if(this.type.includes("entityInteract")){
+                    return "interact";
+                }else if(this.type.includes("entityPhysical")){
+                    return "entityPhysical";
+                }
             }
             if (this.type.includes("agent")) {
                 return "agent"; //assuming that a node will contain an agent only if it can be added

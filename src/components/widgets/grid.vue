@@ -32,6 +32,13 @@
         @closeSensorForm="completeAddSensor"
       />
     </v-overlay>
+    <v-overlay :value="entityForm" :light="true" :dark="false">
+      <AddEntity
+        :physicalArea="physicalArea"
+        :interactArea="interactArea"
+        @closeEntityForm="completeAddEntity"
+      />
+    </v-overlay>
   </div>
 </template>
 
@@ -39,11 +46,12 @@
 import node from "@/models/node";
 import position from "@/models/position";
 import AddSensor from "@/components/widgets/addSensor.vue";
+import AddEntity from "@/components/widgets/addEntity.vue";
 
 export default {
   name: "Grid",
   props: ["editGrid"],
-  components: { AddSensor },
+  components: { AddSensor, AddEntity },
   data() {
     return {
       x: window.innerWidth * 0.83,
@@ -61,6 +69,7 @@ export default {
       physicalArea: new Set(),
       interactArea: new Set(),
       sensorForm: false,
+      entityForm: false,
       clickCount: 0,
       clickTimer: null,
       delay: 250,
@@ -68,15 +77,15 @@ export default {
   },
   methods: {
     handleClick(ID) {
-      this.clickCount++
+      this.clickCount++;
       if (this.clickCount === 1) {
         this.clickTimer = setTimeout(() => {
-          this.clickCount = 0
-          this.click(ID)
-        }, this.delay)
+          this.clickCount = 0;
+          this.click(ID);
+        }, this.delay);
       } else if (this.clickCount === 2) {
-        clearTimeout(this.clickTimer)
-        this.clickCount = 0
+        clearTimeout(this.clickTimer);
+        this.clickCount = 0;
         this.dbClick(ID);
       }
     },
@@ -116,10 +125,16 @@ export default {
     },
     closeSnackBar() {
       if (this.action == "sensor") {
-        if(this.interactArea.size > 0 || this.physicalArea.size>0){
-          this.continueAddSensor();//the sensor should have atleast one interact node or a physical node
+        if (this.interactArea.size > 0 || this.physicalArea.size > 0) {
+          this.continueAddSensor(); //should have atleast one interact node or a physical node
         }
       }
+      if (this.action == "entity") {
+        if (this.interactArea.size > 0 || this.physicalArea.size > 0) {
+          this.continueAddEntity(); //should have atleast one interact node or a physical node
+        }
+      }
+
       this.action = "wall";
       this.snackBar = false;
       this.text = "";
@@ -141,6 +156,17 @@ export default {
           this.updateClassTemp(ID, "overlap");
         } else {
           this.updateClassTemp(ID, "sensorPhysical");
+        }
+      }
+      if (
+        this.action == "entity" &&
+        this.displayedNodes.get(ID).canAddEntityPhysical()
+      ) {
+        this.physicalArea.add(ID);
+        if (this.interactArea.has(ID)) {
+          this.updateClassTemp(ID, "overlap");
+        } else {
+          this.updateClassTemp(ID, "entityPhysical");
         }
       }
     },
@@ -173,6 +199,17 @@ export default {
           this.updateClassTemp(ID, "interact");
         }
       }
+      if (
+        this.action == "entity" &&
+        this.displayedNodes.get(ID).canAddEntityInteract()
+      ) {
+        this.interactArea.add(ID);
+        if (this.physicalArea.has(ID)) {
+          this.updateClassTemp(ID, "overlap");
+        } else {
+          this.updateClassTemp(ID, "interact");
+        }
+      }      
     },
     getPosition(ID) {
       let coords = ID.split("-");
@@ -222,43 +259,98 @@ export default {
       } else {
         this.action = "sensor";
         this.text =
-          "Add sensor physical area by single click and interact area by double click, then continue to finish adding the sensor.";
+          "Add physical area by single click and interact area by double click, then continue to finish adding the sensor.";
         this.btnText = "Continue";
         this.snackBar = true;
       }
     },
-    continueAddSensor(){
-      this.sensorForm=true;
+    continueAddSensor() {
+      this.sensorForm = true;
       //reset the interact and physical area of the nodes to what they were previously
-      this.interactArea.forEach(ID=>{
+      this.interactArea.forEach((ID) => {
         this.updateClass(ID);
       });
-      this.physicalArea.forEach(ID=>{
+      this.physicalArea.forEach((ID) => {
         this.updateClass(ID);
-      })
+      });
     },
-    completeAddSensor(){
-      this.sensorForm=false;
+    completeAddSensor() {
+      this.sensorForm = false;
       let sensorAdded = this.$store.getters.lastSensorAdded;
       this.showSensorOnNode(sensorAdded);
-      this.physicalArea.forEach(ID=>{
+      this.physicalArea.forEach((ID) => {
         this.updateClass(ID);
-      })
-      this.interactArea.forEach(ID=>{
+      });
+      this.interactArea.forEach((ID) => {
         this.updateClass(ID);
-      })
-      this.physicalArea=new Set();
-      this.interactArea=new Set();
+      });
+      this.physicalArea = new Set();
+      this.interactArea = new Set();
     },
-    showSensorOnNode(sensor){
-      for(let i=0;i<sensor.interactArea.length;i++){
-        this.displayedNodes.get(this.getID(sensor.interactArea[i])).setType("sensorInteract");
-        this.displayedNodes.get(this.getID(sensor.interactArea[i])).setSensor(sensor.name,sensor.walkable);
+    showSensorOnNode(sensor) {
+      for (let i = 0; i < sensor.interactArea.length; i++) {
+        this.displayedNodes
+          .get(this.getID(sensor.interactArea[i]))
+          .setType("sensorInteract");
+        this.displayedNodes
+          .get(this.getID(sensor.interactArea[i]))
+          .setSensor(sensor.name, sensor.walkable);
       }
-      for(let j=0;j<sensor.physicalArea.length;j++){
- 
-        this.displayedNodes.get(this.getID(sensor.physicalArea[j])).setType("sensorPhysical");
-        this.displayedNodes.get(this.getID(sensor.physicalArea[j])).setSensor(sensor.name,sensor.walkable);
+      for (let j = 0; j < sensor.physicalArea.length; j++) {
+        this.displayedNodes
+          .get(this.getID(sensor.physicalArea[j]))
+          .setType("sensorPhysical");
+        this.displayedNodes
+          .get(this.getID(sensor.physicalArea[j]))
+          .setSensor(sensor.name, sensor.walkable);
+      }
+    },
+    addEntity() {
+      this.action = "entity";
+      this.text =
+        "Add physical area by single click and interact area by double click, then continue to finish adding the entity.";
+      this.btnText = "Continue";
+      this.snackBar = true;
+    },
+    continueAddEntity() {
+      this.entityForm = true;
+      //reset the interact and physical area of the nodes to what they were previously
+      this.interactArea.forEach((ID) => {
+        this.updateClass(ID);
+      });
+      this.physicalArea.forEach((ID) => {
+        this.updateClass(ID);
+      });
+    },
+    completeAddEntity() {
+      this.entityForm = false;
+      let entityAdded = this.$store.getters.lastEntityAdded;
+      this.showEntityOnNode(entityAdded);
+      this.physicalArea.forEach((ID) => {
+        this.updateClass(ID);
+      });
+      this.interactArea.forEach((ID) => {
+        this.updateClass(ID);
+      });
+      this.physicalArea = new Set();
+      this.interactArea = new Set();
+    },
+    showEntityOnNode(entity) {
+      for (let i = 0; i < entity.interactArea.length; i++) {
+        this.displayedNodes
+          .get(this.getID(entity.interactArea[i]))
+          .setType("entityInteract");
+        this.displayedNodes
+          .get(this.getID(entity.interactArea[i]))
+          .setEntity(entity.name, entity.walkable);
+      }
+      for (let j = 0; j < entity.physicalArea.length; j++) {
+        this.displayedNodes
+          .get(this.getID(entity.physicalArea[j]))
+          .setType("entityPhysical");
+        this.displayedNodes
+          .get(this.getID(entity.physicalArea[j]))
+          .setEntity(entity.name, entity.walkable);
       }
     },
     getID(position) {
@@ -277,8 +369,12 @@ export default {
         this.displayedNodes.get(this.getID(walls[i])).setType("wall");
       }
       let sensors = this.$store.state.sensors;
-      for(let i = 0;i<sensors.length;i++){
+      for (let i = 0; i < sensors.length; i++) {
         this.showSensorOnNode(sensors[i]);
+      }
+      let entities = this.$store.state.entities;
+      for (let i = 0; i < entities.length; i++) {
+        this.showEntityOnNode(entities[i]);
       }
     },
     setAllNodesToEmpty() {
@@ -290,6 +386,28 @@ export default {
         this.displayedNodes.get(this.getID(walls[i])).reset();
         this.updateClass(this.getID(walls[i]));
       }
+      let sensors = this.$store.state.sensors;
+      for(let i = 0; i< sensors.length;i++){
+        for(let j=0;j<sensors[i].physicalArea;j++){
+          this.displayedNodes.get(this.getID(sensors[i].physicalArea[j])).reset();
+          this.updateClass(this.getID(sensors[i].physicalArea[j]));
+        }
+        for(let j=0;j<sensors[i].interactArea;j++){
+          this.displayedNodes.get(this.getID(sensors[i].interactArea[j])).reset();
+          this.updateClass(this.getID(sensors[i].interactArea[j]));
+        }
+      }
+      let entities = this.$store.state.entities;
+      for(let i = 0; i< entities.length;i++){
+        for(let j=0;j<entities[i].physicalArea;j++){
+          this.displayedNodes.get(this.getID(entities[i].physicalArea[j])).reset();
+          this.updateClass(this.getID(entities[i].physicalArea[j]));
+        }
+        for(let j=0;j<entities[i].interactArea;j++){
+          this.displayedNodes.get(this.getID(entities[i].interactArea[j])).reset();
+          this.updateClass(this.getID(entities[i].interactArea[j]));
+        }
+      }     
     },
     clear() {
       this.setAllNodesToEmpty();
@@ -390,6 +508,9 @@ export default {
     this.$root.$on("gridAddSensor", () => {
       this.addSensor();
     });
+    this.$root.$on("gridAddEntity", () => {
+      this.addEntity();
+    });
   },
 };
 </script>
@@ -421,6 +542,14 @@ export default {
 .sensorPhysical {
   /* display: inline-block; */
   background-color: rgba(160, 17, 179, 0.89);
+  width: 25px;
+  height: 25px;
+  outline: 1px #d5d6d6;
+  outline-style: solid;
+}
+.entityPhysical {
+  /* display: inline-block; */
+  background-color: rgba(66, 22, 228, 0.89);
   width: 25px;
   height: 25px;
   outline: 1px #d5d6d6;

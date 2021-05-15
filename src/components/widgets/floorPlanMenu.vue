@@ -30,6 +30,7 @@ export default {
       items: [
         { title: "Clear", eventName: "gridClear" },
         { title: "Add Sensor", eventName: "gridAddSensor" },
+        { title: "Add Entity", eventName: "gridAddEntity" },
         { title: "Move Agent", eventName: "gridMoveAgent" },
         { title: "Up", eventName: "gridPanUp"},
         { title: "Down", eventName: "gridPanDown"},

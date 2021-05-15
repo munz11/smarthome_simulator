@@ -25,13 +25,13 @@
         </v-btn>
       </template>
     </v-snackbar>
-    <!--v-overlay :value="sensorForm" :light="true" :dark="false">
+    <v-overlay :value="sensorForm" :light="true" :dark="false">
       <AddSensor
         :physicalArea="physicalArea"
         :interactArea="interactArea"
         @closeSensorForm="completeAddSensor"
       />
-    </v-overlay-->
+    </v-overlay>
   </div>
 </template>
 
@@ -43,7 +43,7 @@ import AddSensor from "@/components/widgets/addSensor.vue";
 export default {
   name: "Grid",
   props: ["editGrid"],
-  //components: { AddSensor },
+  components: { AddSensor },
   data() {
     return {
       x: window.innerWidth * 0.83,
@@ -116,8 +116,9 @@ export default {
     },
     closeSnackBar() {
       if (this.action == "sensor") {
-        console.log(this.physicalArea);
-        console.log(this.interactArea);
+        if(this.interactArea.size > 0 || this.physicalArea.size>0){
+          this.continueAddSensor();//the sensor should have atleast one interact node or a physical node
+        }
       }
       this.action = "wall";
       this.snackBar = false;
@@ -212,20 +213,53 @@ export default {
       let numTypes =
         this.$store.state.passiveSensors.length +
         this.$store.state.activeSensors.length;
-      console.log(numTypes);
-      /*if (numTypes == 0) {
+      if (numTypes == 0) {
         //cannot add sensor so give warning
         this.action = "cantAdd";
         this.text = "No sensor types are available";
         this.btnText = "Close";
         this.snackBar = true;
-      } else {*/
+      } else {
         this.action = "sensor";
         this.text =
           "Add sensor physical area by single click and interact area by double click, then continue to finish adding the sensor.";
         this.btnText = "Continue";
         this.snackBar = true;
-      //}
+      }
+    },
+    continueAddSensor(){
+      this.sensorForm=true;
+      //reset the interact and physical area of the nodes to what they were previously
+      this.interactArea.forEach(ID=>{
+        this.updateClass(ID);
+      });
+      this.physicalArea.forEach(ID=>{
+        this.updateClass(ID);
+      })
+    },
+    completeAddSensor(){
+      this.sensorForm=false;
+      let sensorAdded = this.$store.getters.lastSensorAdded;
+      this.showSensorOnNode(sensorAdded);
+      this.physicalArea.forEach(ID=>{
+        this.updateClass(ID);
+      })
+      this.interactArea.forEach(ID=>{
+        this.updateClass(ID);
+      })
+      this.physicalArea=new Set();
+      this.interactArea=new Set();
+    },
+    showSensorOnNode(sensor){
+      for(let i=0;i<sensor.interactArea.length;i++){
+        this.displayedNodes.get(this.getID(sensor.interactArea[i])).setType("sensorInteract");
+        this.displayedNodes.get(this.getID(sensor.interactArea[i])).setSensor(sensor.name,sensor.walkable);
+      }
+      for(let j=0;j<sensor.physicalArea.length;j++){
+ 
+        this.displayedNodes.get(this.getID(sensor.physicalArea[j])).setType("sensorPhysical");
+        this.displayedNodes.get(this.getID(sensor.physicalArea[j])).setSensor(sensor.name,sensor.walkable);
+      }
     },
     getID(position) {
       return position.x.toString() + "-" + position.y.toString();
@@ -241,6 +275,10 @@ export default {
       let walls = this.$store.state.walls;
       for (let i = 0; i < walls.length; i++) {
         this.displayedNodes.get(this.getID(walls[i])).setType("wall");
+      }
+      let sensors = this.$store.state.sensors;
+      for(let i = 0;i<sensors.length;i++){
+        this.showSensorOnNode(sensors[i]);
       }
     },
     setAllNodesToEmpty() {

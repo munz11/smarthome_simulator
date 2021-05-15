@@ -66,10 +66,10 @@ export default {
         this.name,
         this.getListPositions(this.physicalArea),
         this.getListPositions(this.interactArea),
-        this.triggerFrequency == "" ? null : parseInt(this.triggerFrequency) * 1000000000,
+        this.triggerFrequency == "" ? 0 : parseInt(this.triggerFrequency) * 1000000000,
         this.typeOptions.find((option) => option.value == this.type).send,
         this.walkable == "true" ? true : false,
-        this.isPassiveType(this.type)? "passive" : "active"
+        this.isPassiveType()? "passive" : "active"
       );
       this.$store.commit("addSensor", sensorObject);
       this.$emit("closeSensorForm");
@@ -89,7 +89,6 @@ export default {
         return true
       }
       return false
-      
     },
     getTypeOptions(){
       let passiveSensors = this.$store.state.passiveSensors;
@@ -107,7 +106,7 @@ export default {
   },
   beforeMount(){
     this.getTypeOptions();
-    //this.triggerFrequencyRules.push((v)=>  v || 'Required');
+    this.type=this.typeOptions[0].value;
   }
 };
 </script>

@@ -53,4 +53,9 @@ export default new Vuex.Store({
       sessionStorage.setItem("agent", JSON.stringify(state.agent));
     },
   },
+  getters: {
+    lastSensorAdded: state => {
+      return state.sensors[state.sensors.length-1];
+    }
+  }
 });

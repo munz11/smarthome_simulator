@@ -3,16 +3,16 @@ import { faThumbsDown } from "@fortawesome/free-solid-svg-icons";
 export default class node {
     type: string[]; // empty, wall, agent, sensorInteract, sensorPhysical, entityInteract, entityPhysical
     id: string; //position on the grid x-y
-    sensorName: string[]; // a node can contain multiple sensors 
-    entityName: string[]; // a node can contain multiple entity names
+    sensorName: Set<string>; // a node can contain multiple sensors 
+    entityName: Set<string>; // a node can contain multiple entity names
     walkable: boolean;
 
     constructor(id: string) {
         this.type = [];
         this.type.push("empty");
         this.id = id;
-        this.sensorName = [];
-        this.entityName = [];
+        this.sensorName = new Set();
+        this.entityName = new Set();
         this.walkable = false;
     }
     setType(type: string) {
@@ -22,11 +22,11 @@ export default class node {
         this.type = this.type.filter(value => value !== "agent");
     }
     setSensor(sensorName: string, walkable: boolean) {
-        this.sensorName.push(sensorName);
+        this.sensorName.add(sensorName);
         this.walkable = walkable;
     }
     setEntity(entityName: string, walkable: boolean) {
-        this.entityName.push(entityName);
+        this.entityName.add(entityName);
         this.walkable = walkable;
     }
     removeWall() {
@@ -35,8 +35,8 @@ export default class node {
     reset() {
         this.type = [];
         this.type.push("empty");
-        this.sensorName = [];
-        this.entityName = [];
+        this.sensorName = new Set();
+        this.entityName = new Set();
         this.walkable = false;
     }
     getTypeofNode():string{ 
@@ -54,14 +54,24 @@ export default class node {
         }
         return "empty";
     }
+    setToString(setToConsider: Set<string>):string{
+        let value="";
+        setToConsider.forEach(val=>{
+            value+=val+",";
+        })
+        return value;
+    }
     displayNodeInfo():string{
         //x-y,sensornames,entitynames
-        if(this.sensorName.length==0){
+        if(this.sensorName.size==0){
+            if(this.entityName.size!==0){
+                return this.id+","+this.setToString(this.entityName);
+            }
             return this.id;
-        }else if(this.entityName.length==0){
-            return this.id+","+this.sensorName.toString();
+        }else if(this.entityName.size==0){
+            return this.id+","+this.setToString(this.sensorName);
         }
-        return this.id+","+this.sensorName.toString()+","+this.entityName.toString();
+        return this.id+","+this.setToString(this.sensorName)+this.setToString(this.entityName);
     }
     canMoveAgentHere():boolean{
         if(this.type.includes("wall")){

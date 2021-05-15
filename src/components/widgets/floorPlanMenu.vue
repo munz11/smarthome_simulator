@@ -1,7 +1,6 @@
 <template>
   <div>
-    <v-card v-resize="onResize" :height="y" width="200" class="mx-auto">
-      <v-navigation-drawer absolute permanent left>
+    <v-card v-resize="onResize" :height="y" :width="x">
         <v-list-item>
           <v-list-item-content>
             <v-list-item-title class="title">Options </v-list-item-title>
@@ -18,18 +17,7 @@
               <v-list-item-title>{{ item.title }}</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item @click="zoomIn">
-            <v-list-item-content>
-              <v-list-item-title> Zoom In </v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item @click="zoomOut">
-            <v-list-item-content>
-              <v-list-item-title> Zoom Out </v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
         </v-list>
-      </v-navigation-drawer>
     </v-card>
   </div>
 </template>
@@ -42,9 +30,15 @@ export default {
       items: [
         { title: "Clear", eventName: "gridClear" },
         { title: "Add Sensor", eventName: "gridAddSensor" },
-        { title: "Move Agent", eventName: "gridAddAgent" },
+        { title: "Add Entity", eventName: "gridAddEntity" },
+        { title: "Move Agent", eventName: "gridMoveAgent" },
+        { title: "Up", eventName: "gridPanUp"},
+        { title: "Down", eventName: "gridPanDown"},
+        { title: "Left", eventName: "gridPanLeft"},
+        { title: "Right", eventName: "gridPanRight"}
       ],
       y: window.innerHeight - 57,
+      x: window.innerWidth*0.15,
     };
   },
   methods: {
@@ -53,12 +47,7 @@ export default {
     },
     onResize() {
       this.y = window.innerHeight - 57;
-    },
-    zoomIn() {
-      this.$root.$emit("gridZoomIn");
-    },
-    zoomOut() {
-      this.$root.$emit("gridZoomOut");
+      this.x = window.innerWidth*0.15;
     },
   },
 };

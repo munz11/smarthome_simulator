@@ -1,24 +1,24 @@
 <template>
-  <div v-resize="onResize" :height="y">
-    <div id="Grid">
+  <div>
+    <v-card :height="y" :width="x" v-resize="onResize">
       <tbody>
-        <tr v-for="i in row" :id="'row' + '-' + i" v-bind:key="i">
+        <tr v-for="row in currentRows" :key="row">
           <td
-            class="unvisited"
-            v-for="j in col"
-            :id="j + '-' + i"
-            v-bind:key="j"
-            @mouseover="addWall(j + '-' + i)"
-            v-on:click.exact="addObject(j + '-' + i)"
-            v-on:dblclick.exact="addSensorTrigger(j + '-' + i)"
-            v-tooltip.hover.focus="j + '-' + i"
+            v-for="col in currentCols"
+            :key="col"
+            :id="col + '-' + row"
+            :class="getClass(col + '-' + row)"
+            v-tooltip.hover="show(col + '-' + row)"
+            @mousedown="startWall(col + '-' + row)"
+            @mouseover="continueWall(col + '-' + row)"
+            @mouseup="stopWall(col + '-' + row)"
+            @click="handleClick(col + '-' + row)"
           ></td>
         </tr>
       </tbody>
-    </div>
-    <v-snackbar v-model="SnackBar" timeout="-1">
+    </v-card>
+    <v-snackbar v-model="snackBar" timeout="-1" bottom>
       {{ text }}
-
       <template v-slot:action="{ attrs }">
         <v-btn color="pink" text v-bind="attrs" @click="closeSnackBar">
           {{ btnText }}
@@ -27,228 +27,495 @@
     </v-snackbar>
     <v-overlay :value="sensorForm" :light="true" :dark="false">
       <AddSensor
-        :positions="sensorPositionNodes"
-        :triggerArea="sensorTriggerNodes"
-        @closeSensorForm="closeSensorForm"
+        :physicalArea="physicalArea"
+        :interactArea="interactArea"
+        @closeSensorForm="completeAddSensor"
+      />
+    </v-overlay>
+    <v-overlay :value="entityForm" :light="true" :dark="false">
+      <AddEntity
+        :physicalArea="physicalArea"
+        :interactArea="interactArea"
+        @closeEntityForm="completeAddEntity"
       />
     </v-overlay>
   </div>
 </template>
 
 <script>
-import wall from "@/models/wall";
+import node from "@/models/node";
 import position from "@/models/position";
 import AddSensor from "@/components/widgets/addSensor.vue";
-import Panzoom from "@panzoom/panzoom";
+import AddEntity from "@/components/widgets/addEntity.vue";
 
 export default {
   name: "Grid",
-  props: ["widthNodes", "heightNodes", "editPlan"],
-  components: {
-    AddSensor,
-  },
+  props: ["editGrid"],
+  components: { AddSensor, AddEntity },
   data() {
     return {
-      x: window.innerWidth,
+      x: window.innerWidth * 0.83,
       y: window.innerHeight - 57,
-      row: this.heightNodes,
-      col: this.widthNodes,
-      occupiedNodes: [],
-      SnackBar: false,
-      sensorTriggerNodes: new Set(),
-      sensorPositionNodes: new Set(),
+      displayedNodes: new Map(),
+      currentRows: [],
+      currentCols: [],
+      maxRow: this.$store.state.floorPlanDetails.height,
+      maxCol: this.$store.state.floorPlanDetails.width,
+      action: "wall",
+      wall: false,
+      snackBar: false,
       text: "",
       btnText: "",
-      lastAddedAgentID: "",
-      objectBeingAdded: "wall",
+      physicalArea: new Set(),
+      interactArea: new Set(),
       sensorForm: false,
-      multiwall: false,
-      selectedNode: "",
-      panzoom: null,
+      entityForm: false,
+      clickCount: 0,
+      clickTimer: null,
+      delay: 250,
     };
   },
   methods: {
+    handleClick(ID) {
+      this.clickCount++;
+      if (this.clickCount === 1) {
+        this.clickTimer = setTimeout(() => {
+          this.clickCount = 0;
+          this.click(ID);
+        }, this.delay);
+      } else if (this.clickCount === 2) {
+        clearTimeout(this.clickTimer);
+        this.clickCount = 0;
+        this.dbClick(ID);
+      }
+    },
     onResize() {
       this.y = window.innerHeight - 57;
+      this.x = window.innerWidth * 0.83;
+      this.calculateNodesDisplayed();
     },
-    addObject(id) {
-      if (this.editPlan) {
-        let l = document.getElementById(id);
-        l.setAttribute("class", this.objectBeingAdded);
-
-        if (this.objectBeingAdded === "sensorPosition") {
-          this.sensorPositionNodes.add(id);
-        }
-        this.occupiedNodes.push(id);
-        this.updateStore(id);
-
-        if (this.objectBeingAdded == "wall") {
-          this.multiwall = !this.multiwall;
-        }
-      } else if (
-        this.objectBeingAdded === "GoTo" ||
-        this.objectBeingAdded === "Interact"
-      ) {
-        if(!this.selectedNode=="" && this.objectBeingAdded === "GoTo" ){
-          let l=document.getElementById(this.selectedNode);
-          l.setAttribute("class", "unvisited");
-        }
-        this.selectedNode = id;
-        let l = document.getElementById(id);
-        l.setAttribute("class", "Selected");
+    getClass(ID) {
+      return this.displayedNodes.get(ID).getTypeofNode();
+    },
+    updateClass(ID) {
+      let l = document.getElementById(ID);
+      l.setAttribute("class", this.displayedNodes.get(ID).getTypeofNode());
+    },
+    updateClassTemp(ID, type) {
+      let l = document.getElementById(ID);
+      l.setAttribute("class", type);
+    },
+    calculateNodesDisplayed() {
+      this.currentCols = [];
+      this.currentRows = [];
+      let displayCol = Math.floor((42 * this.x) / 1062);
+      let displayRow = Math.floor((21 * this.y) / 553);
+      if (displayCol > this.maxCol) {
+        displayCol = this.maxCol;
       }
-    },
-    addWall(id) {
-      if (this.multiwall && this.objectBeingAdded == "wall") {
-        let l = document.getElementById(id);
-        l.setAttribute("class", this.objectBeingAdded);
-        this.occupiedNodes.push(id);
-        this.updateStore(id);
+      if (displayRow > this.maxRow) {
+        displayRow = this.maxRow;
       }
-    },
-    updateStore(id) {
-      let coords = id.split("-");
-      if (this.objectBeingAdded === "wall") {
-        this.$store.commit(
-          "addWall",
-          new wall(new position(parseInt(coords[0]), parseInt(coords[1])))
-        );
-      } else if (this.objectBeingAdded === "agent") {
-        this.updateAgentNodes(id);
-        this.$store.commit(
-          "updateAgent",
-          new position(parseInt(coords[0]), parseInt(coords[1]))
-        );
+      for (let j = 0; j < displayCol; j++) {
+        this.currentCols.push(j);
       }
-    },
-    updateAgentNodes(id) {
-      if (this.lastAddedAgentID != "") {
-        let l2 = document.getElementById(this.lastAddedAgentID);
-        l2.setAttribute("class", "unvisited");
+      for (let j = 0; j < displayRow; j++) {
+        this.currentRows.push(j);
       }
-      this.lastAddedAgentID = id;
-    },
-    addSensorTrigger(id) {
-      if (this.objectBeingAdded === "sensorPosition") {
-        let l = document.getElementById(id);
-        l.setAttribute("class", "sensorTrigger");
-        this.sensorTriggerNodes.add(id);
-        if (this.sensorPositionNodes.has(id)) {
-          this.sensorPositionNodes.delete(id);
-        }
-      }
-    },
-    clear() {
-      for (let i = 0; i < this.occupiedNodes.length; i++) {
-        let l = document.getElementById(this.occupiedNodes[i]);
-        l.setAttribute("class", "unvisited");
-        //need to save in store
-      }
-      this.occupiedNodes = [];
-      this.$store.commit("clearAllInfoOnGrid");
-      this.updateGridToStore(); 
-    },
-    alertSensorForm() {
-      this.sensorForm = true;
-    },
-    closeSensorForm() {
-      this.sensorForm = false;
-      this.sensorTriggerNodes.forEach((id) => {
-        let l = document.getElementById(id);
-        l.setAttribute("class", "unvisited");
-      });
-      this.sensorTriggerNodes.clear();
-      this.sensorPositionNodes.clear();
-    },
-    updateAgentTileForSimulation(newTile) {
-      let l = document.getElementById(this.lastAddedAgentID);
-      l.setAttribute("class", "unvisited");
-      l = document.getElementById(newTile);
-      l.setAttribute("class", "agent");
-      this.lastAddedAgentID = newTile;
     },
     closeSnackBar() {
-      if (this.objectBeingAdded === "sensorPosition") {
-        this.alertSensorForm();
-      } else if (this.objectBeingAdded === "GoTo") {
-        this.$root.$emit("TileGoTo", this.selectedNode);
-        this.updateAgentTileForSimulation(this.selectedNode);
-        this.selectedNode = "";
-      } else if (this.objectBeingAdded === "Interact") {
-        this.$root.$emit("SensorInteract", this.selectedNode);
-        let l = document.getElementById(this.selectedNode);
-        l.setAttribute("class", "sensorPosition");
-        this.selectedNode = "";
+      if (this.action == "sensor") {
+        if (this.interactArea.size > 0 || this.physicalArea.size > 0) {
+          this.continueAddSensor(); //should have atleast one interact node or a physical node
+        }
       }
-      this.objectBeingAdded = "wall";
-      this.SnackBar = false;
+      if (this.action == "entity") {
+        if (this.interactArea.size > 0 || this.physicalArea.size > 0) {
+          this.continueAddEntity(); //should have atleast one interact node or a physical node
+        }
+      }
+
+      this.action = "wall";
+      this.snackBar = false;
+      this.text = "";
+      this.btnText = "";
     },
-    updateTile(position, object) {
-      let id = position.x.toString() + "-" + position.y.toString();
-      let l = document.getElementById(id);
-      l.setAttribute("class", object);
-      this.occupiedNodes.push(id);
+    click(ID) {
+      if (
+        this.action == "agent" &&
+        this.displayedNodes.get(ID).canMoveAgentHere()
+      ) {
+        this.updateAgentNodes(ID);
+      }
+      if (
+        this.action == "sensor" &&
+        this.displayedNodes.get(ID).canAddSensorPhysical()
+      ) {
+        this.physicalArea.add(ID);
+        if (this.interactArea.has(ID)) {
+          this.updateClassTemp(ID, "overlap");
+        } else {
+          this.updateClassTemp(ID, "sensorPhysical");
+        }
+      }
+      if (
+        this.action == "entity" &&
+        this.displayedNodes.get(ID).canAddEntityPhysical()
+      ) {
+        this.physicalArea.add(ID);
+        if (this.interactArea.has(ID)) {
+          this.updateClassTemp(ID, "overlap");
+        } else {
+          this.updateClassTemp(ID, "entityPhysical");
+        }
+      }
     },
-    updateGridToStore() {
-      let agent = this.$store.state.agent;
-      this.updateTile(agent, "agent");
-      this.lastAddedAgentID = agent.x.toString() + "-" + agent.y.toString();
+    updateAgentNodes(ID) {
+      this.displayedNodes
+        .get(this.getID(this.$store.state.agent))
+        .removeAgent(); // remove the agent from this node
+      this.updateClass(this.getID(this.$store.state.agent)); //update the node class
+      this.displayedNodes.get(ID).setType("agent"); //update the new agent node
+      this.updateClass(ID); //update the class of new agent node
+      this.$store.commit("updateAgent", this.getPosition(ID)); //update store
+    },
+    dbClick(ID) {
+      if (
+        this.action == "wall" &&
+        this.displayedNodes.get(ID).type.includes("wall")
+      ) {
+        this.displayedNodes.get(ID).removeWall();
+        this.$store.commit("removeWall", this.getPosition(ID));
+        this.updateClass(ID);
+      }
+      if (
+        this.action == "sensor" &&
+        this.displayedNodes.get(ID).canAddSensorInteract()
+      ) {
+        this.interactArea.add(ID);
+        if (this.physicalArea.has(ID)) {
+          this.updateClassTemp(ID, "overlap");
+        } else {
+          this.updateClassTemp(ID, "interact");
+        }
+      }
+      if (
+        this.action == "entity" &&
+        this.displayedNodes.get(ID).canAddEntityInteract()
+      ) {
+        this.interactArea.add(ID);
+        if (this.physicalArea.has(ID)) {
+          this.updateClassTemp(ID, "overlap");
+        } else {
+          this.updateClassTemp(ID, "interact");
+        }
+      }      
+    },
+    getPosition(ID) {
+      let coords = ID.split("-");
+      return new position(parseInt(coords[0]), parseInt(coords[1]));
+    },
+    startWall(ID) {
+      if (
+        this.action == "wall" &&
+        this.displayedNodes.get(ID).canAddWallHere()
+      ) {
+        this.wall = true;
+        this.displayedNodes.get(ID).setType("wall");
+        this.$store.commit("addWall", this.getPosition(ID));
+        this.updateClass(ID);
+      }
+    },
+    continueWall(ID) {
+      if (this.action == "wall" && this.wall) {
+        if (this.displayedNodes.get(ID).canAddWallHere()) {
+          this.displayedNodes.get(ID).setType("wall");
+          this.$store.commit("addWall", this.getPosition(ID));
+          this.updateClass(ID);
+        }
+      }
+    },
+    stopWall(ID) {
+      if (this.action == "wall" && this.wall) {
+        if (this.displayedNodes.get(ID).canAddWallHere()) {
+          this.displayedNodes.get(ID).setType("wall");
+          this.$store.commit("addWall", this.getPosition(ID));
+          this.updateClass(ID);
+        }
+        this.wall = false;
+      }
+    },
+    addSensor() {
+      //check if any type of sensor is available:
+      let numTypes =
+        this.$store.state.passiveSensors.length +
+        this.$store.state.activeSensors.length;
+      if (numTypes == 0) {
+        //cannot add sensor so give warning
+        this.action = "cantAdd";
+        this.text = "No sensor types are available";
+        this.btnText = "Close";
+        this.snackBar = true;
+      } else {
+        this.action = "sensor";
+        this.text =
+          "Add physical area by single click and interact area by double click, then continue to finish adding the sensor.";
+        this.btnText = "Continue";
+        this.snackBar = true;
+      }
+    },
+    continueAddSensor() {
+      this.sensorForm = true;
+      //reset the interact and physical area of the nodes to what they were previously
+      this.interactArea.forEach((ID) => {
+        this.updateClass(ID);
+      });
+      this.physicalArea.forEach((ID) => {
+        this.updateClass(ID);
+      });
+    },
+    completeAddSensor() {
+      this.sensorForm = false;
+      let sensorAdded = this.$store.getters.lastSensorAdded;
+      this.showSensorOnNode(sensorAdded);
+      this.physicalArea.forEach((ID) => {
+        this.updateClass(ID);
+      });
+      this.interactArea.forEach((ID) => {
+        this.updateClass(ID);
+      });
+      this.physicalArea = new Set();
+      this.interactArea = new Set();
+    },
+    showSensorOnNode(sensor) {
+      for (let i = 0; i < sensor.interactArea.length; i++) {
+        this.displayedNodes
+          .get(this.getID(sensor.interactArea[i]))
+          .setType("sensorInteract");
+        this.displayedNodes
+          .get(this.getID(sensor.interactArea[i]))
+          .setSensor(sensor.name, sensor.walkable);
+      }
+      for (let j = 0; j < sensor.physicalArea.length; j++) {
+        this.displayedNodes
+          .get(this.getID(sensor.physicalArea[j]))
+          .setType("sensorPhysical");
+        this.displayedNodes
+          .get(this.getID(sensor.physicalArea[j]))
+          .setSensor(sensor.name, sensor.walkable);
+      }
+    },
+    addEntity() {
+      this.action = "entity";
+      this.text =
+        "Add physical area by single click and interact area by double click, then continue to finish adding the entity.";
+      this.btnText = "Continue";
+      this.snackBar = true;
+    },
+    continueAddEntity() {
+      this.entityForm = true;
+      //reset the interact and physical area of the nodes to what they were previously
+      this.interactArea.forEach((ID) => {
+        this.updateClass(ID);
+      });
+      this.physicalArea.forEach((ID) => {
+        this.updateClass(ID);
+      });
+    },
+    completeAddEntity() {
+      this.entityForm = false;
+      let entityAdded = this.$store.getters.lastEntityAdded;
+      this.showEntityOnNode(entityAdded);
+      this.physicalArea.forEach((ID) => {
+        this.updateClass(ID);
+      });
+      this.interactArea.forEach((ID) => {
+        this.updateClass(ID);
+      });
+      this.physicalArea = new Set();
+      this.interactArea = new Set();
+    },
+    showEntityOnNode(entity) {
+      for (let i = 0; i < entity.interactArea.length; i++) {
+        this.displayedNodes
+          .get(this.getID(entity.interactArea[i]))
+          .setType("entityInteract");
+        this.displayedNodes
+          .get(this.getID(entity.interactArea[i]))
+          .setEntity(entity.name, entity.walkable);
+      }
+      for (let j = 0; j < entity.physicalArea.length; j++) {
+        this.displayedNodes
+          .get(this.getID(entity.physicalArea[j]))
+          .setType("entityPhysical");
+        this.displayedNodes
+          .get(this.getID(entity.physicalArea[j]))
+          .setEntity(entity.name, entity.walkable);
+      }
+    },
+    getID(position) {
+      return position.x.toString() + "-" + position.y.toString();
+    },
+    show(ID) {
+      return this.displayedNodes.get(ID).displayNodeInfo();
+    },
+    updateNodesToStore() {
+      //assumes that the store contains the allowed node types, so no need to check if the agent or a wall can be added here
+      this.displayedNodes
+        .get(this.getID(this.$store.state.agent))
+        .setType("agent");
       let walls = this.$store.state.walls;
       for (let i = 0; i < walls.length; i++) {
-        this.updateTile(walls[i].position, "wall");
+        this.displayedNodes.get(this.getID(walls[i])).setType("wall");
       }
       let sensors = this.$store.state.sensors;
       for (let i = 0; i < sensors.length; i++) {
-        for (let j = 0; j < sensors[i].positions.length; j++) {
-          this.updateTile(sensors[i].positions[j], "sensorPosition");
+        this.showSensorOnNode(sensors[i]);
+      }
+      let entities = this.$store.state.entities;
+      for (let i = 0; i < entities.length; i++) {
+        this.showEntityOnNode(entities[i]);
+      }
+    },
+    setAllNodesToEmpty() {
+      //reset all the nodes which contained something - removes agent and wall atm
+      this.displayedNodes.get(this.getID(this.$store.state.agent)).reset();
+      this.updateClass(this.getID(this.$store.state.agent));
+      let walls = this.$store.state.walls;
+      for (let i = 0; i < walls.length; i++) {
+        this.displayedNodes.get(this.getID(walls[i])).reset();
+        this.updateClass(this.getID(walls[i]));
+      }
+      let sensors = this.$store.state.sensors;
+      for(let i = 0; i< sensors.length;i++){
+        for(let j=0;j<sensors[i].physicalArea;j++){
+          this.displayedNodes.get(this.getID(sensors[i].physicalArea[j])).reset();
+          this.updateClass(this.getID(sensors[i].physicalArea[j]));
         }
+        for(let j=0;j<sensors[i].interactArea;j++){
+          this.displayedNodes.get(this.getID(sensors[i].interactArea[j])).reset();
+          this.updateClass(this.getID(sensors[i].interactArea[j]));
+        }
+      }
+      let entities = this.$store.state.entities;
+      for(let i = 0; i< entities.length;i++){
+        for(let j=0;j<entities[i].physicalArea;j++){
+          this.displayedNodes.get(this.getID(entities[i].physicalArea[j])).reset();
+          this.updateClass(this.getID(entities[i].physicalArea[j]));
+        }
+        for(let j=0;j<entities[i].interactArea;j++){
+          this.displayedNodes.get(this.getID(entities[i].interactArea[j])).reset();
+          this.updateClass(this.getID(entities[i].interactArea[j]));
+        }
+      }     
+    },
+    clear() {
+      this.setAllNodesToEmpty();
+      this.$store.commit("clearAllInfoOnGrid");
+      this.displayedNodes
+        .get(this.getID(this.$store.state.agent))
+        .setType("agent"); //reset agent position according to store
+      this.updateClass(this.getID(this.$store.state.agent));
+    },
+    moveAgent() {
+      this.action = "agent";
+      this.text = "Move the agent by clicking on a new tile.";
+      this.btnText = "Done";
+      this.snackBar = true;
+    },
+    panLeft() {
+      let val = this.currentCols.length;
+      if (this.maxCol - this.currentCols.length > 0) {
+        let el = this.currentCols[val - 1] + 1;
+        this.currentCols.shift();
+        this.currentCols.push(el);
+      } else {
+        this.text = "Cannot move towards left.";
+        this.btnText = "Close";
+        this.snackBar = true;
+      }
+    },
+    panRight() {
+      if (
+        this.maxCol - this.currentCols.length > 0 &&
+        this.currentCols[0] !== 0
+      ) {
+        let el = this.currentCols[0] - 1;
+        this.currentCols.pop();
+        this.currentCols.unshift(el);
+      } else {
+        this.text = "Cannot move towards right.";
+        this.btnText = "Close";
+        this.snackBar = true;
+      }
+    },
+    panDown() {
+      let val = this.currentRows.length;
+      if (this.maxRow - this.currentRows.length > 0) {
+        let el = this.currentRows[val - 1] + 1;
+        this.currentRows.shift();
+        this.currentRows.push(el);
+      } else {
+        this.text = "Cannot move down.";
+        this.btnText = "Close";
+        this.snackBar = true;
+      }
+    },
+    panUp() {
+      if (
+        this.maxRow - this.currentRows.length > 0 &&
+        this.currentRows[0] !== 0
+      ) {
+        let el = this.currentRows[0] - 1;
+        this.currentRows.pop();
+        this.currentRows.unshift(el);
+      } else {
+        this.text = "Cannot move up.";
+        this.btnText = "Close";
+        this.snackBar = true;
       }
     },
   },
+  beforeMount() {
+    for (let i = 0; i < this.maxRow; i++) {
+      for (let j = 0; j < this.maxCol; j++) {
+        let key = j.toString() + "-" + i.toString();
+        this.displayedNodes.set(key, new node(key));
+      }
+    }
+  },
   mounted() {
-    this.panzoom = Panzoom(document.getElementById("Grid"), {
-      maxScale: 5,
-    });
-    this.updateGridToStore();
-    this.$root.$on("gridZoomIn", () => {
-      this.panzoom.zoomIn();
-    });
-    this.$root.$on("gridZoomOut", () => {
-      this.panzoom.zoomOut();
-    });
+    this.calculateNodesDisplayed();
+    this.updateNodesToStore();
     this.$root.$on("gridClear", () => {
       this.clear();
     });
+    this.$root.$on("gridMoveAgent", () => {
+      this.moveAgent();
+    });
+    this.$root.$on("gridPanLeft", () => {
+      this.panLeft();
+    });
+    this.$root.$on("gridPanRight", () => {
+      this.panRight();
+    });
+    this.$root.$on("gridPanDown", () => {
+      this.panDown();
+    });
+    this.$root.$on("gridPanUp", () => {
+      this.panUp();
+    });
     this.$root.$on("gridAddSensor", () => {
-      this.objectBeingAdded = "sensorPosition";
-      this.SnackBar = true;
-      this.text = "Add further details about the sensor.";
-      this.btnText = "Continue";
+      this.addSensor();
     });
-    this.$root.$on("gridAddAgent", () => {
-      this.objectBeingAdded = "agent";
-      this.SnackBar = true;
-      this.text = "Finish moving the agent.";
-      this.btnText = "Done";
-    });
-    this.$root.$on("GoTo", () => {
-      this.objectBeingAdded = "GoTo";
-      this.SnackBar = true;
-      this.text = "Select tile to which you want the agent to move to.";
-      this.btnText = "Done";
-    });
-    this.$root.$on("Interact", () => {
-      this.objectBeingAdded = "Interact";
-      this.SnackBar = true;
-      this.text =
-        "Select the sensor you want agent to interact with, the selected tile will turn red.";
-      this.btnText = "Done";
+    this.$root.$on("gridAddEntity", () => {
+      this.addEntity();
     });
   },
 };
 </script>
 <style>
-.unvisited {
+.empty {
   /* display: inline-block; */
   background: rgba(255, 255, 255, 0.89);
   width: 25px;
@@ -256,105 +523,52 @@ export default {
   outline: 1px #d5d6d6;
   outline-style: solid;
 }
-
-@keyframes makewall {
-  from {
-    /* transform: scale(0.5); */
-    background-color: rgba(253, 253, 253, 0.89);
-  }
-  to {
-    /* transform: scale(1); */
-    background-color: rgb(32, 34, 32);
-  }
+.agent {
+  /* display: inline-block; */
+  background-color: rgb(22, 230, 84);
+  width: 25px;
+  height: 25px;
+  outline: 1px #d5d6d6;
+  outline-style: solid;
 }
 .wall {
   /* display: inline-block; */
-  background-color: rgba(255, 255, 255, 0.89);
-  animation-name: makewall;
-  animation-duration: 0.5s;
-  animation-fill-mode: forwards;
-  animation-timing-function: ease-out;
+  background-color: rgba(10, 2, 2, 0.89);
   width: 25px;
   height: 25px;
+  outline: 1px #d5d6d6;
+  outline-style: solid;
 }
-@keyframes makeagent {
-  from {
-    /* transform: scale(0.5); */
-    background-color: rgba(253, 253, 253, 0.89);
-  }
-  to {
-    /* transform: scale(1); */
-    background-color: rgb(22, 230, 84);
-  }
-}
-.agent {
+.sensorPhysical {
   /* display: inline-block; */
-  background-color: rgba(255, 255, 255, 0.89);
-  animation-name: makeagent;
-  animation-duration: 0.5s;
-  animation-fill-mode: forwards;
-  animation-timing-function: ease-out;
+  background-color: rgba(160, 17, 179, 0.89);
   width: 25px;
   height: 25px;
+  outline: 1px #d5d6d6;
+  outline-style: solid;
 }
-@keyframes makeSensorPosition {
-  from {
-    /* transform: scale(0.5); */
-    background-color: rgba(253, 253, 253, 0.89);
-  }
-  to {
-    /* transform: scale(1); */
-    background-color: rgb(79, 34, 151);
-  }
-}
-.sensorPosition {
+.entityPhysical {
   /* display: inline-block; */
-  background-color: rgba(255, 255, 255, 0.89);
-  animation-name: makeSensorPosition;
-  animation-duration: 0.5s;
-  animation-fill-mode: forwards;
-  animation-timing-function: ease-out;
+  background-color: rgba(66, 22, 228, 0.89);
   width: 25px;
   height: 25px;
+  outline: 1px #d5d6d6;
+  outline-style: solid;
 }
-@keyframes makeSensorTrigger {
-  from {
-    /* transform: scale(0.5); */
-    background-color: rgba(253, 253, 253, 0.89);
-  }
-  to {
-    /* transform: scale(1); */
-    background-color: rgb(204, 90, 226);
-  }
-}
-.sensorTrigger {
+.interact {
   /* display: inline-block; */
-  background-color: rgba(255, 255, 255, 0.89);
-  animation-name: makeSensorTrigger;
-  animation-duration: 0.5s;
-  animation-fill-mode: forwards;
-  animation-timing-function: ease-out;
+  background-color: rgba(238, 153, 231, 0.89);
   width: 25px;
   height: 25px;
+  outline: 1px #d5d6d6;
+  outline-style: solid;
 }
-@keyframes makeSelected {
-  from {
-    /* transform: scale(0.5); */
-    background-color: rgba(253, 253, 253, 0.89);
-  }
-  to {
-    /* transform: scale(1); */
-    background-color: rgb(182, 46, 5);
-  }
-}
-.Selected {
+.overlap {
   /* display: inline-block; */
-  background-color: rgba(255, 255, 255, 0.89);
-  animation-name: makeSelected;
-  animation-duration: 0.5s;
-  animation-fill-mode: forwards;
-  animation-timing-function: ease-out;
+  background-color: rgba(240, 13, 32, 0.89);
   width: 25px;
   height: 25px;
+  outline: 1px #d5d6d6;
+  outline-style: solid;
 }
 </style>

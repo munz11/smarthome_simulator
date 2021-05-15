@@ -22,4 +22,10 @@ export default class smartHomeBackend {
   getUrlSimulation(): string{
     return this.getUrl() +"/api/simulation/simulator";
   }
+  getUrlActiveSensors(): string{
+    return this.getUrl() +"/api/system/activeSensors";
+  }
+  getUrlPassiveSensors(): string{
+    return this.getUrl() +"/api/system/passiveSensors";
+  }
 }

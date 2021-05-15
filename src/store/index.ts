@@ -2,42 +2,71 @@ import Vue from "vue";
 import Vuex from "vuex";
 import sensor from "../models/sensor";
 import position from "../models/position";
-import wall from "../models/wall";
 import floorPlanDetails from "../models/floorPlanDetails";
+import entity from "../models/entity";
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    agent: JSON.parse(sessionStorage.getItem("agent")) || new position(0, 0), //default
-    sensors: JSON.parse(sessionStorage.getItem("sensors")) || Array<sensor>(), //need to find a better way
-    walls: JSON.parse(sessionStorage.getItem("walls")) || Array<wall>(),
-    floorPlanDetails: JSON.parse(sessionStorage.getItem("floorPlanDetails")) || new floorPlanDetails(0,0,0)
+    agent: JSON.parse(sessionStorage.getItem("agent")) || new position(0, 0),
+    sensors: JSON.parse(sessionStorage.getItem("sensors")) || Array<sensor>(),
+    entities: JSON.parse(sessionStorage.getItem("entities")) || Array<entity>(),
+    walls: JSON.parse(sessionStorage.getItem("walls")) || Array<position>(),
+    floorPlanDetails: JSON.parse(sessionStorage.getItem("floorPlanDetails")) || new floorPlanDetails(0, 0, 0),
+    passiveSensors: JSON.parse(sessionStorage.getItem("passiveSensors")) || Array<string>(),
+    activeSensors: JSON.parse(sessionStorage.getItem("activeSensors")) || Array<string>()
   },
 
   mutations: {
+    addActiveSensors(state, newActive: string[]) {
+      state.activeSensors = newActive;
+      sessionStorage.setItem("activeSensors", JSON.stringify(state.activeSensors));
+    },
+    addPassiveSensors(state, newPassive: string[]) {
+      state.passiveSensors = newPassive;
+      sessionStorage.setItem("passiveSensors", JSON.stringify(state.passiveSensors));
+    },
     addSensor(state, newSensor: sensor) {
       state.sensors.push(newSensor);
       sessionStorage.setItem("sensors", JSON.stringify(state.sensors));
     },
-    addWall(state, newWall: wall) {
+    addEntity(state, newEntity: entity) {
+      state.entities.push(newEntity);
+      sessionStorage.setItem("entities", JSON.stringify(state.entities));
+    },
+    addWall(state, newWall: position) {
       state.walls.push(newWall);
+      sessionStorage.setItem("walls", JSON.stringify(state.walls));
+    },
+    removeWall(state, wall: position) {
+      state.walls = state.walls.filter((e: position) => !(e.x == wall.x && e.y == wall.y));
       sessionStorage.setItem("walls", JSON.stringify(state.walls));
     },
     updateAgent(state, newAgentPosition: position) {
       state.agent = newAgentPosition;
       sessionStorage.setItem("agent", JSON.stringify(state.agent));
     },
-    updateFloorPlanDetails(state, newFloorPlan: floorPlanDetails){
-      state.floorPlanDetails=newFloorPlan;
+    updateFloorPlanDetails(state, newFloorPlan: floorPlanDetails) {
+      state.floorPlanDetails = newFloorPlan;
       sessionStorage.setItem("floorPlanDetails", JSON.stringify(state.floorPlanDetails));
     },
     clearAllInfoOnGrid(state) {
       state.sensors = Array<sensor>();
-      state.walls = Array<wall>();
-      state.agent = new position(0,0);
+      state.entities = Array<entity>();
+      state.walls = Array<position>();
+      state.agent = new position(0, 0);
       sessionStorage.setItem("sensors", JSON.stringify(state.sensors));
+      sessionStorage.setItem("entities", JSON.stringify(state.entities));
       sessionStorage.setItem("walls", JSON.stringify(state.walls));
-      sessionStorage.setItem("agent",JSON.stringify(state.agent));
+      sessionStorage.setItem("agent", JSON.stringify(state.agent));
     },
   },
+  getters: {
+    lastSensorAdded: state => {
+      return state.sensors[state.sensors.length - 1];
+    },
+    lastEntityAdded: state => {
+      return state.entities[state.entities.length - 1];
+    }
+  }
 });

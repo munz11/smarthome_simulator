@@ -23,7 +23,7 @@
               label="Side Length"
               v-model="tileSideLength"
               required
-              :rules="numberRules"
+              :rules="sideLengthRules"
             ></v-text-field>
           </v-form>
         </v-card-text>
@@ -58,6 +58,12 @@ export default {
         (v) =>
           /^[1-9]$|^[1-9][0-9]$|^(100)$/.test(v) ||
           "Number should be in the range 1 -100",
+      ],
+      sideLengthRules:[
+        (v) => !!v || "Required",
+        (v) =>
+          /^\d*$/.test(v) ||
+          "Enter a number",
       ],
     };
   },

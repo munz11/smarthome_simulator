@@ -85,6 +85,16 @@ export default class node {
         }
         return true;
     }
+    canAddSensorPhysical():boolean{
+        if(this.type.includes("wall") || this.type.includes("agent")){
+            return false; //sensor physical can not be added on a wall or where the agent is at the moment
+        }
+        return true;
+    }
+    canAddSensorInteract():boolean{
+        return true; //atm it can be added anywhere
+    }
+
     
 
 }

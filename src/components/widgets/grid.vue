@@ -12,8 +12,7 @@
             @mousedown="startWall(col + '-' + row)"
             @mouseover="continueWall(col + '-' + row)"
             @mouseup="stopWall(col + '-' + row)"
-            @dblclick="dbClick(col + '-' + row)"
-            @click="click(col + '-' + row)"
+            @click="handleClick(col + '-' + row)"
           ></td>
         </tr>
       </tbody>
@@ -59,12 +58,28 @@ export default {
       snackBar: false,
       text: "",
       btnText: "",
-      //physicalArea: [],
-      //interactArea: [],
-      //sensorForm: false,
+      physicalArea: new Set(),
+      interactArea: new Set(),
+      sensorForm: false,
+      clickCount: 0,
+      clickTimer: null,
+      delay: 250,
     };
   },
   methods: {
+    handleClick(ID) {
+      this.clickCount++
+      if (this.clickCount === 1) {
+        this.clickTimer = setTimeout(() => {
+          this.clickCount = 0
+          this.click(ID)
+        }, this.delay)
+      } else if (this.clickCount === 2) {
+        clearTimeout(this.clickTimer)
+        this.clickCount = 0
+        this.dbClick(ID);
+      }
+    },
     onResize() {
       this.y = window.innerHeight - 57;
       this.x = window.innerWidth * 0.83;
@@ -76,6 +91,10 @@ export default {
     updateClass(ID) {
       let l = document.getElementById(ID);
       l.setAttribute("class", this.displayedNodes.get(ID).getTypeofNode());
+    },
+    updateClassTemp(ID, type) {
+      let l = document.getElementById(ID);
+      l.setAttribute("class", type);
     },
     calculateNodesDisplayed() {
       this.currentCols = [];
@@ -96,6 +115,10 @@ export default {
       }
     },
     closeSnackBar() {
+      if (this.action == "sensor") {
+        console.log(this.physicalArea);
+        console.log(this.interactArea);
+      }
       this.action = "wall";
       this.snackBar = false;
       this.text = "";
@@ -108,9 +131,22 @@ export default {
       ) {
         this.updateAgentNodes(ID);
       }
+      if (
+        this.action == "sensor" &&
+        this.displayedNodes.get(ID).canAddSensorPhysical()
+      ) {
+        this.physicalArea.add(ID);
+        if (this.interactArea.has(ID)) {
+          this.updateClassTemp(ID, "overlap");
+        } else {
+          this.updateClassTemp(ID, "sensorPhysical");
+        }
+      }
     },
     updateAgentNodes(ID) {
-      this.displayedNodes.get(this.getID(this.$store.state.agent)).removeAgent() // remove the agent from this node
+      this.displayedNodes
+        .get(this.getID(this.$store.state.agent))
+        .removeAgent(); // remove the agent from this node
       this.updateClass(this.getID(this.$store.state.agent)); //update the node class
       this.displayedNodes.get(ID).setType("agent"); //update the new agent node
       this.updateClass(ID); //update the class of new agent node
@@ -124,6 +160,17 @@ export default {
         this.displayedNodes.get(ID).removeWall();
         this.$store.commit("removeWall", this.getPosition(ID));
         this.updateClass(ID);
+      }
+      if (
+        this.action == "sensor" &&
+        this.displayedNodes.get(ID).canAddSensorInteract()
+      ) {
+        this.interactArea.add(ID);
+        if (this.physicalArea.has(ID)) {
+          this.updateClassTemp(ID, "overlap");
+        } else {
+          this.updateClassTemp(ID, "interact");
+        }
       }
     },
     getPosition(ID) {
@@ -160,13 +207,34 @@ export default {
         this.wall = false;
       }
     },
+    addSensor() {
+      //check if any type of sensor is available:
+      let numTypes =
+        this.$store.state.passiveSensors.length +
+        this.$store.state.activeSensors.length;
+      console.log(numTypes);
+      /*if (numTypes == 0) {
+        //cannot add sensor so give warning
+        this.action = "cantAdd";
+        this.text = "No sensor types are available";
+        this.btnText = "Close";
+        this.snackBar = true;
+      } else {*/
+        this.action = "sensor";
+        this.text =
+          "Add sensor physical area by single click and interact area by double click, then continue to finish adding the sensor.";
+        this.btnText = "Continue";
+        this.snackBar = true;
+      //}
+    },
     getID(position) {
       return position.x.toString() + "-" + position.y.toString();
     },
     show(ID) {
       return this.displayedNodes.get(ID).displayNodeInfo();
     },
-    updateNodesToStore() { //assumes that the store contains the allowed node types, so no need to check if the agent or a wall can be added here
+    updateNodesToStore() {
+      //assumes that the store contains the allowed node types, so no need to check if the agent or a wall can be added here
       this.displayedNodes
         .get(this.getID(this.$store.state.agent))
         .setType("agent");
@@ -177,7 +245,7 @@ export default {
     },
     setAllNodesToEmpty() {
       //reset all the nodes which contained something - removes agent and wall atm
-      this.displayedNodes.get(this.getID(this.$store.state.agent)).reset()
+      this.displayedNodes.get(this.getID(this.$store.state.agent)).reset();
       this.updateClass(this.getID(this.$store.state.agent));
       let walls = this.$store.state.walls;
       for (let i = 0; i < walls.length; i++) {
@@ -188,7 +256,9 @@ export default {
     clear() {
       this.setAllNodesToEmpty();
       this.$store.commit("clearAllInfoOnGrid");
-      this.displayedNodes.get(this.getID(this.$store.state.agent)).setType("agent"); //reset agent position according to store
+      this.displayedNodes
+        .get(this.getID(this.$store.state.agent))
+        .setType("agent"); //reset agent position according to store
       this.updateClass(this.getID(this.$store.state.agent));
     },
     moveAgent() {
@@ -279,6 +349,9 @@ export default {
     this.$root.$on("gridPanUp", () => {
       this.panUp();
     });
+    this.$root.$on("gridAddSensor", () => {
+      this.addSensor();
+    });
   },
 };
 </script>
@@ -291,104 +364,44 @@ export default {
   outline: 1px #d5d6d6;
   outline-style: solid;
 }
-@keyframes makeagent {
-  from {
-    /* transform: scale(0.5); */
-    background-color: rgba(253, 253, 253, 0.89);
-  }
-  to {
-    /* transform: scale(1); */
-    background-color: rgb(22, 230, 84);
-  }
-}
 .agent {
   /* display: inline-block; */
-  background-color: rgba(255, 255, 255, 0.89);
-  animation-name: makeagent;
-  animation-duration: 0.5s;
-  animation-fill-mode: forwards;
-  animation-timing-function: ease-out;
+  background-color: rgb(22, 230, 84);
   width: 25px;
   height: 25px;
-}
-@keyframes makewall {
-  from {
-    /* transform: scale(0.5); */
-    background-color: rgba(253, 253, 253, 0.89);
-  }
-  to {
-    /* transform: scale(1); */
-    background-color: rgb(32, 34, 32);
-  }
+  outline: 1px #d5d6d6;
+  outline-style: solid;
 }
 .wall {
   /* display: inline-block; */
-  background-color: rgba(255, 255, 255, 0.89);
-  animation-name: makewall;
-  animation-duration: 0.5s;
-  animation-fill-mode: forwards;
-  animation-timing-function: ease-out;
+  background-color: rgba(10, 2, 2, 0.89);
   width: 25px;
   height: 25px;
-}
-@keyframes makesensorphysical {
-  from {
-    /* transform: scale(0.5); */
-    background-color: rgba(253, 253, 253, 0.89);
-  }
-  to {
-    /* transform: scale(1); */
-    background-color: rgb(74, 5, 83);
-  }
+  outline: 1px #d5d6d6;
+  outline-style: solid;
 }
 .sensorPhysical {
   /* display: inline-block; */
-  background-color: rgba(255, 255, 255, 0.89);
-  animation-name: makesensorphysical;
-  animation-duration: 0.5s;
-  animation-fill-mode: forwards;
-  animation-timing-function: ease-out;
+  background-color: rgba(160, 17, 179, 0.89);
   width: 25px;
   height: 25px;
+  outline: 1px #d5d6d6;
+  outline-style: solid;
 }
-@keyframes makesensorInteract {
-  from {
-    /* transform: scale(0.5); */
-    background-color: rgba(253, 253, 253, 0.89);
-  }
-  to {
-    /* transform: scale(1); */
-    background-color: rgb(235, 32, 133);
-  }
-}
-.sensorInteract {
+.interact {
   /* display: inline-block; */
-  background-color: rgba(255, 255, 255, 0.89);
-  animation-name: makesensorInteract;
-  animation-duration: 0.5s;
-  animation-fill-mode: forwards;
-  animation-timing-function: ease-out;
+  background-color: rgba(238, 153, 231, 0.89);
   width: 25px;
   height: 25px;
-}
-@keyframes makesoverlap {
-  from {
-    /* transform: scale(0.5); */
-    background-color: rgba(253, 253, 253, 0.89);
-  }
-  to {
-    /* transform: scale(1); */
-    background-color: rgb(225, 59, 240);
-  }
+  outline: 1px #d5d6d6;
+  outline-style: solid;
 }
 .overlap {
   /* display: inline-block; */
-  background-color: rgba(255, 255, 255, 0.89);
-  animation-name: makesoverlap;
-  animation-duration: 0.5s;
-  animation-fill-mode: forwards;
-  animation-timing-function: ease-out;
+  background-color: rgba(240, 13, 32, 0.89);
   width: 25px;
   height: 25px;
+  outline: 1px #d5d6d6;
+  outline-style: solid;
 }
 </style>

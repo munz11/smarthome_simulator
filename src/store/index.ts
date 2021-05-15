@@ -14,13 +14,18 @@ export default new Vuex.Store({
     walls: JSON.parse(sessionStorage.getItem("walls")) || Array<position>(),
     floorPlanDetails: JSON.parse(sessionStorage.getItem("floorPlanDetails")) || new floorPlanDetails(0, 0, 0),
     passiveSensors: JSON.parse(sessionStorage.getItem("passiveSensors")) || Array<string>(),
-    activeSensors: JSON.parse(sessionStorage.getItem("activeSensors")) || Array<string>()
+    activeSensors: JSON.parse(sessionStorage.getItem("activeSensors")) || Array<string>(),
+    filterText: sessionStorage.getItem("filterText") || "",
   },
 
   mutations: {
     addActiveSensors(state, newActive: string[]) {
       state.activeSensors = newActive;
       sessionStorage.setItem("activeSensors", JSON.stringify(state.activeSensors));
+    },
+    updateFilterText(state,text:string){
+      state.filterText=text;
+      sessionStorage.setItem("filterText",state.filterText);
     },
     addPassiveSensors(state, newPassive: string[]) {
       state.passiveSensors = newPassive;

@@ -73,6 +73,7 @@ export default {
       clickCount: 0,
       clickTimer: null,
       delay: 250,
+      filterText: this.$store.state.filterText,
     };
   },
   methods: {
@@ -95,11 +96,11 @@ export default {
       this.calculateNodesDisplayed();
     },
     getClass(ID) {
-      return this.displayedNodes.get(ID).getTypeofNode();
+      return this.displayedNodes.get(ID).getTypeofNode(this.$store.state.filterText);
     },
     updateClass(ID) {
       let l = document.getElementById(ID);
-      l.setAttribute("class", this.displayedNodes.get(ID).getTypeofNode());
+      l.setAttribute("class", this.displayedNodes.get(ID).getTypeofNode(this.$store.state.filterText));
     },
     updateClassTemp(ID, type) {
       let l = document.getElementById(ID);
@@ -209,7 +210,7 @@ export default {
         } else {
           this.updateClassTemp(ID, "interact");
         }
-      }      
+      }
     },
     getPosition(ID) {
       let coords = ID.split("-");
@@ -387,27 +388,27 @@ export default {
         this.updateClass(this.getID(walls[i]));
       }
       let sensors = this.$store.state.sensors;
-      for(let i = 0; i< sensors.length;i++){
-        for(let j=0;j<sensors[i].physicalArea;j++){
+      for (let i = 0; i < sensors.length; i++) {
+        for (let j = 0; j < sensors[i].physicalArea.length; j++) {
           this.displayedNodes.get(this.getID(sensors[i].physicalArea[j])).reset();
           this.updateClass(this.getID(sensors[i].physicalArea[j]));
         }
-        for(let j=0;j<sensors[i].interactArea;j++){
+        for (let j = 0; j < sensors[i].interactArea.length; j++) {
           this.displayedNodes.get(this.getID(sensors[i].interactArea[j])).reset();
           this.updateClass(this.getID(sensors[i].interactArea[j]));
         }
       }
       let entities = this.$store.state.entities;
-      for(let i = 0; i< entities.length;i++){
-        for(let j=0;j<entities[i].physicalArea;j++){
+      for (let i = 0; i < entities.length; i++) {
+        for (let j = 0; j < entities[i].physicalArea.length; j++) {
           this.displayedNodes.get(this.getID(entities[i].physicalArea[j])).reset();
           this.updateClass(this.getID(entities[i].physicalArea[j]));
         }
-        for(let j=0;j<entities[i].interactArea;j++){
+        for (let j = 0; j < entities[i].interactArea.length; j++) {
           this.displayedNodes.get(this.getID(entities[i].interactArea[j])).reset();
           this.updateClass(this.getID(entities[i].interactArea[j]));
         }
-      }     
+      }
     },
     clear() {
       this.setAllNodesToEmpty();
@@ -475,6 +476,26 @@ export default {
         this.snackBar = true;
       }
     },
+    updateSensorEntityNodes() {
+      let sensors = this.$store.state.sensors;
+      for (let i = 0; i < sensors.length; i++) {
+        for (let j = 0; j < sensors[i].physicalArea.length; j++) {
+          this.updateClass(this.getID(sensors[i].physicalArea[j]));
+        }
+        for (let j = 0; j < sensors[i].interactArea.length; j++) {
+          this.updateClass(this.getID(sensors[i].interactArea[j]));
+        }
+      }
+      let entities = this.$store.state.entities;
+      for (let i = 0; i < entities.length; i++) {
+        for (let j = 0; j < entities[i].physicalArea.length; j++) {
+          this.updateClass(this.getID(entities[i].physicalArea[j]));
+        }
+        for (let j = 0; j < entities[i].interactArea.length; j++) {
+          this.updateClass(this.getID(entities[i].interactArea[j]));
+        }
+      }
+    },
   },
   beforeMount() {
     for (let i = 0; i < this.maxRow; i++) {
@@ -512,6 +533,11 @@ export default {
       this.addEntity();
     });
   },
+  watch:{
+    filterText:function(){
+      this.updateSensorEntityNodes();
+    }
+  }
 };
 </script>
 <style>

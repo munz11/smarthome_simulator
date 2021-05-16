@@ -26,4 +26,29 @@ export default class sensor {
     this.walkable=walkable;
     this.sensorType=sensorType;
   }
+  isPassive():boolean{
+    if (this.sensorType == "passive"){
+      return true;
+    }
+    return false;
+  }
+  getPassiveSensor(){
+    return {
+      type: this.type,
+      name: this.name,
+      physicalArea: this.physicalArea,
+      interactArea: this.interactArea,
+      walkable: this.walkable,
+      triggerFrequency: this.triggerFrequency
+    }
+  }
+  getActiveSensor(){
+    return {
+      type: this.type,
+      name: this.name,
+      physicalArea: this.physicalArea,
+      interactArea: this.interactArea,
+      walkable: this.walkable
+    }
+  }
 }

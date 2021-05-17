@@ -276,10 +276,8 @@ export default {
         if (!isValid) {
           this.messageFromUpload = JSON.stringify(validate.errors);
         } else {
-          this.messageFromUpload = "Success";
+          this.messageFromUpload = "Success. Close the card to update the grid.";
           this.updateStore();
-          //refresh page
-          this.$router.go();
         }
       } catch (err) {
         this.messageFromUpload = err;

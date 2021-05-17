@@ -33,7 +33,7 @@
       </v-list>
     </v-card>
     <v-overlay :value="showUploadDownload" :light="true" :dark="false">
-      <UploadDownload @closeCard="showUploadDownload = false" />
+      <UploadDownload @closeCard="closeCardRefresh" />
     </v-overlay>
   </div>
 </template>
@@ -64,6 +64,10 @@ export default {
   methods: {
     executeEvent(eventName) {
       this.$root.$emit(eventName);
+    },
+    closeCardRefresh() {
+      this.showUploadDownload = false;
+      this.$router.go();
     },
     onResize() {
       this.y = window.innerHeight - 57;

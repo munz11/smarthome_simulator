@@ -11,7 +11,12 @@
             :rules="nameRules"
           ></v-text-field>
           <label>Type: </label>
-          <select v-model="type" class="form-control" required :rules="typeRules">
+          <select
+            v-model="type"
+            class="form-control"
+            required
+            :rules="typeRules"
+          >
             <option
               v-for="option in typeOptions"
               v-bind:key="option.value"
@@ -21,7 +26,7 @@
             </option>
           </select>
           <v-checkbox v-model="walkable" label="walkable"></v-checkbox>
-          <v-text-field 
+          <v-text-field
             label="Trigger Frequency (s)"
             v-model="triggerFrequency"
             required
@@ -50,14 +55,14 @@ export default {
       name: "",
       triggerFrequency: "",
       walkable: "true",
-      typeOptions:[],
+      typeOptions: [],
       type: "",
       isValid: true,
-      nameRules: [(v) => !!v || 'Required'],
-      typeRules: [(v) => !!v || 'Required'],
-      triggerFrequencyRules: [(v) =>
-          /^\d*$/.test(v) ||
-          "Only numbers are allowed"]
+      nameRules: [(v) => !!v || "Required"],
+      typeRules: [(v) => !!v || "Required"],
+      triggerFrequencyRules: [
+        (v) => /^\d*$/.test(v) || "Only numbers are allowed",
+      ],
     };
   },
   methods: {
@@ -66,10 +71,12 @@ export default {
         this.name,
         this.getListPositions(this.physicalArea),
         this.getListPositions(this.interactArea),
-        this.triggerFrequency == "" ? 0 : parseInt(this.triggerFrequency) * 1000000000,
+        this.triggerFrequency == ""
+          ? 0
+          : parseInt(this.triggerFrequency) * 1000000000,
         this.typeOptions.find((option) => option.value == this.type).send,
         this.walkable == "true" ? true : false,
-        this.isPassiveType()? "passive" : "active"
+        this.isPassiveType() ? "passive" : "active"
       );
       this.$store.commit("addSensor", sensorObject);
       this.$emit("closeSensorForm");
@@ -84,30 +91,45 @@ export default {
       });
       return positionObjects;
     },
-    isPassiveType(){
-      if(this.$store.state.passiveSensors.includes(this.typeOptions.find((option) => option.value == this.type).send)){
-        return true
+    isPassiveType() {
+      if (
+        this.$store.state.passiveSensors.includes(
+          this.typeOptions.find((option) => option.value == this.type).send
+        )
+      ) {
+        return true;
       }
-      return false
+      return false;
     },
-    getTypeOptions(){
+    getTypeOptions() {
       let passiveSensors = this.$store.state.passiveSensors;
       let j = passiveSensors.length;
-      for(let i=0; i<passiveSensors.length;i++){
+      for (let i = 0; i < passiveSensors.length; i++) {
         let el = passiveSensors[i].split(".");
-        this.typeOptions.push({value: i, text: el[2], send: passiveSensors[i]});
+        this.typeOptions.push({
+          value: i,
+          text: el[2],
+          send: passiveSensors[i],
+        });
       }
-      let activeSensors = this.$store.state.activeSensors;
-      for(let i=0; i<activeSensors.length;i++){
-        let el = activeSensors[i].split(".");
-        this.typeOptions.push({value: i+j, text: el[2], send: activeSensors[i]});
+
+      if (this.interactArea > 0) {
+        let activeSensors = this.$store.state.activeSensors;
+        for (let i = 0; i < activeSensors.length; i++) {
+          let el = activeSensors[i].split(".");
+          this.typeOptions.push({
+            value: i + j,
+            text: el[2],
+            send: activeSensors[i],
+          });
+        }
       }
-    }
+    },
   },
-  beforeMount(){
+  beforeMount() {
     this.getTypeOptions();
-    this.type=this.typeOptions[0].value;
-  }
+    this.type = this.typeOptions[0].value;
+  },
 };
 </script>
 

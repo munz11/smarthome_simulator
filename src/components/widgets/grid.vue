@@ -137,9 +137,19 @@ export default {
     },
     closeSnackBar() {
       if (this.action == "sensor") {
-        if (this.interactArea.size > 0 || this.physicalArea.size > 0) {
-          this.continueAddSensor(); //should have atleast one interact node or a physical node
+        if (this.interactArea.size == 0) {
+          //check if the passive sensors types are present:
+          let numlength = this.$store.state.passiveSensors.length;
+          if (numlength > 0) {
+            this.continueAddSensor();
+          } else {
+            this.action = "cantAdd";
+            this.text = "No sensor types are available";
+            this.btnText = "Close";
+            this.snackBar = true;
+          }
         }
+        this.continueAddSensor(); 
       }
       if (this.action == "entity") {
         if (this.interactArea.size > 0 || this.physicalArea.size > 0) {
@@ -249,7 +259,7 @@ export default {
       }
     },
     stopWall(ID) {
-      if ( this.editGrid && this.action == "wall" && this.wall) {
+      if (this.editGrid && this.action == "wall" && this.wall) {
         if (this.displayedNodes.get(ID).canAddWallHere()) {
           this.displayedNodes.get(ID).setType("wall");
           this.$store.commit("addWall", this.getPosition(ID));

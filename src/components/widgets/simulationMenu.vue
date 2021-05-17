@@ -1,15 +1,11 @@
 <template>
   <div>
-    <v-card v-resize="onResize" :height="y" width="250" class="mx-auto">
-      <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title class="title"
-            >Atomic Actions for Activities
-          </v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
-      <v-divider />
-      <v-list dense nav>
+    <v-card v-resize="onResize" :height="y" :width="x">
+      <v-list dense>
+        <v-list-item>
+          <AddInput />
+        </v-list-item>
+        <v-divider />
         <v-list-item
           v-for="item in items"
           :key="item.title"
@@ -19,38 +15,36 @@
             <v-list-item-title>{{ item.title }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item @click="zoomIn">
-          <v-list-item-content>
-            <v-list-item-title> Zoom In </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item @click="zoomOut">
-          <v-list-item-content>
-            <v-list-item-title> Zoom Out </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
       </v-list>
-      <v-divider/>
-      <v-list-item>
-        <AddInput />
+      <v-list-item @click="showUploadDownload = true">
+        <v-list-item-content>
+          <v-list-item-title>Upload / Download</v-list-item-title>
+        </v-list-item-content>
       </v-list-item>
     </v-card>
+    <v-overlay :value="showUploadDownload" :light="true" :dark="false">
+      <UploadDownloadActivities @closeCard="showUploadDownload = false" />
+    </v-overlay>
   </div>
 </template>
 
 <script>
 import AddInput from "@/components/widgets/addInput.vue";
+import UploadDownloadActivities from "@/components/widgets/uploadDownloadActivities.vue";
 export default {
   name: "SimulationMenu",
-  components: { AddInput },
+  components: { AddInput, UploadDownloadActivities },
   data() {
     return {
       items: [
-        { title: "Goto", eventName: "GoTo" },
-        { title: "Wait", eventName: "Wait" },
-        { title: "Interact", eventName: "Interact" },
+        { title: "Up", eventName: "gridPanUp" },
+        { title: "Down", eventName: "gridPanDown" },
+        { title: "Left", eventName: "gridPanLeft" },
+        { title: "Right", eventName: "gridPanRight" },
       ],
-      y: window.innerHeight - 30,
+      y: window.innerHeight - 57,
+      x: window.innerWidth * 0.15,
+      showUploadDownload: false,
     };
   },
   methods: {
@@ -58,14 +52,9 @@ export default {
       this.$root.$emit(eventName);
     },
     onResize() {
-      this.y = window.innerHeight - 30;
+      this.y = window.innerHeight - 57;
+      this.x = window.innerWidth * 0.15;
     },
-    zoomIn() {
-      this.$root.$emit("gridZoomIn");
-    },
-    zoomOut() {
-      this.$root.$emit("gridZoomOut");
-    }
   },
 };
 </script>

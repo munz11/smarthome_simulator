@@ -10,8 +10,12 @@
                 label="Date"
                 v-model="date"
                 required
-                :rules="[(v) => !!v || 'Required']"
-                hint="Format: yyyy-mm-dd"
+                :rules="[
+                  (v) => !!v || 'Required',
+                  (v) =>
+                    /^\d{4}-\d{2}-\d{2}$/.test(v) ||
+                    'Enter Date in the correct format: yyyy-mm-dd',
+                ]"
               ></v-text-field>
             </v-col>
             <v-col>
@@ -19,8 +23,13 @@
                 label="Time"
                 v-model="time"
                 required
-                hint="Format: HH:mm:ss"
-                :rules="[(v) => !!v || 'Required']"
+                hint="HH:mm:ss"
+                :rules="[
+                  (v) => !!v || 'Required',
+                  (v) =>
+                    /^\d{2}:\d{2}:\d{2}$/.test(v) ||
+                    'Enter time in the correct format: HH:mm:ss',
+                ]"
               ></v-text-field>
             </v-col>
           </v-row>
@@ -32,14 +41,20 @@
             label="Relative Time"
             v-model="relativeTime"
             required
-            :rules="[(v) => !!v || 'Required']"
+            :rules="[
+              (v) => !!v || 'Required',
+              (v) => /^\d*$/.test(v) || 'Enter a number',
+            ]"
           ></v-text-field>
           <v-text-field
             label="Seed"
             v-model="seed"
             required
             hint="156241"
-            :rules="[(v) => !!v || 'Required']"
+            :rules="[
+              (v) => !!v || 'Required',
+              (v) => /^\d*$/.test(v) || 'Enter a number',
+            ]"
           ></v-text-field>
           <v-checkbox v-model="mqttOutput" label="Mqtt Output"></v-checkbox>
           <v-row>
@@ -94,12 +109,7 @@ export default {
   name: "AddSimulationInfo",
   data: () => {
     return {
-      date:
-        new Date().getFullYear() +
-        "-" +
-        new Date().getMonth() +
-        "-" +
-        new Date().getDate(),
+      date:"",
       time:
         new Date().getHours() +
         ":" +
@@ -116,7 +126,7 @@ export default {
       btnText: "",
       SnackBar: false,
       isValid: true,
-      seed:null,
+      seed: null,
     };
   },
   methods: {
@@ -142,28 +152,27 @@ export default {
         mqttHost: this.mqttHost,
         mqttPort: this.mqttPort,
         rootTopic: this.rootTopic,
-        seed: this.seed
+        seed: this.seed,
       };
       axios
         .post(this.$smartHomeBackend.getUrlSimulation(), simulationJson)
-        .then((res) => {
-          this.text =
+        .then(() => {
+          if(this.mqttOutput){
+            this.text =
             "The simulation has started, the data can be found at the mqtt host:" +
             this.mqttHost;
+          }else{
+            this.text =
+            "The simulation has ended."
+          }
           this.btnText = "Close";
           this.SnackBar = true;
-          this.$emit("simulationClose");
         })
         .catch((err) => {
           this.text = err;
           this.btnText = "Close";
           this.SnackBar = true;
         });
-      this.text =
-        "The simulation has started, the data can be found at the mqtt host:" +
-        this.mqttHost;
-      this.btnText = "Close";
-      this.SnackBar = true;
     },
     closeSnackBar() {
       this.text = "";

@@ -40,6 +40,7 @@ export default {
       errors: null,
       messageFromUpload: "",
       jsonData: null,
+      data:null,
     };
   },
   methods: {
@@ -48,14 +49,14 @@ export default {
     },
     upload() {
       if (!this.File) {
-        this.data = "No File Chosen";
+        this.messageFromUpload = "No File Chosen";
       } else {
         var reader = new FileReader();
         reader.readAsText(this.File);
         reader.onload = () => {
           this.data = reader.result;
         };
-        this.valid();
+        setTimeout(()=>{ this.valid();}, 1500);
       }
     },
     updateStore() {
@@ -275,10 +276,8 @@ export default {
         if (!isValid) {
           this.messageFromUpload = JSON.stringify(validate.errors);
         } else {
-          this.messageFromUpload = "Success";
+          this.messageFromUpload = "Success. Close the card to update the grid.";
           this.updateStore();
-          //refresh page
-          this.$router.go();
         }
       } catch (err) {
         this.messageFromUpload = err;

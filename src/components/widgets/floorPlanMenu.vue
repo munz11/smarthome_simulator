@@ -8,6 +8,13 @@
       </v-list-item>
       <v-divider />
       <v-list dense>
+        <v-list-item>
+          <v-text-field
+            label="Filter"
+            hint="Case-sensitive"
+            :v-model="filterText"
+          ></v-text-field>
+        </v-list-item>
         <v-list-item
           v-for="item in items"
           :key="item.title"
@@ -17,13 +24,7 @@
             <v-list-item-title>{{ item.title }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item>
-          <v-text-field
-            label="Filter"
-            hint="Case-sensitive"
-            v-model="filterText"
-          ></v-text-field>
-        </v-list-item>
+
         <v-list-item @click="showUploadDownload = true">
           <v-list-item-content>
             <v-list-item-title>Upload / Download</v-list-item-title>
@@ -32,7 +33,7 @@
       </v-list>
     </v-card>
     <v-overlay :value="showUploadDownload" :light="true" :dark="false">
-      <UploadDownload @closeCard="showUploadDownload=false" />
+      <UploadDownload @closeCard="showUploadDownload = false" />
     </v-overlay>
   </div>
 </template>
@@ -45,10 +46,10 @@ export default {
   data() {
     return {
       items: [
-        { title: "Clear", eventName: "gridClear" },
         { title: "Add Sensor", eventName: "gridAddSensor" },
         { title: "Add Entity", eventName: "gridAddEntity" },
         { title: "Move Agent", eventName: "gridMoveAgent" },
+        { title: "Clear", eventName: "gridClear" },
         { title: "Up", eventName: "gridPanUp" },
         { title: "Down", eventName: "gridPanDown" },
         { title: "Left", eventName: "gridPanLeft" },

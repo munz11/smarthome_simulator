@@ -78,16 +78,18 @@ export default {
   },
   methods: {
     handleClick(ID) {
-      this.clickCount++;
-      if (this.clickCount === 1) {
-        this.clickTimer = setTimeout(() => {
+      if (this.editGrid) {
+        this.clickCount++;
+        if (this.clickCount === 1) {
+          this.clickTimer = setTimeout(() => {
+            this.clickCount = 0;
+            this.click(ID);
+          }, this.delay);
+        } else if (this.clickCount === 2) {
+          clearTimeout(this.clickTimer);
           this.clickCount = 0;
-          this.click(ID);
-        }, this.delay);
-      } else if (this.clickCount === 2) {
-        clearTimeout(this.clickTimer);
-        this.clickCount = 0;
-        this.dbClick(ID);
+          this.dbClick(ID);
+        }
       }
     },
     onResize() {
@@ -96,14 +98,20 @@ export default {
       this.calculateNodesDisplayed();
     },
     getClass(ID) {
-      return this.displayedNodes.get(ID).getTypeofNode(this.$store.state.filterText);
+      return this.displayedNodes
+        .get(ID)
+        .getTypeofNode(this.$store.state.filterText);
     },
     updateClass(ID) {
       let l = document.getElementById(ID);
-      if(l!=null){
-        l.setAttribute("class", this.displayedNodes.get(ID).getTypeofNode(this.$store.state.filterText));
+      if (l != null) {
+        l.setAttribute(
+          "class",
+          this.displayedNodes
+            .get(ID)
+            .getTypeofNode(this.$store.state.filterText)
+        );
       }
-      
     },
     updateClassTemp(ID, type) {
       let l = document.getElementById(ID);
@@ -221,6 +229,7 @@ export default {
     },
     startWall(ID) {
       if (
+        this.editGrid &&
         this.action == "wall" &&
         this.displayedNodes.get(ID).canAddWallHere()
       ) {
@@ -231,7 +240,7 @@ export default {
       }
     },
     continueWall(ID) {
-      if (this.action == "wall" && this.wall) {
+      if (this.editGrid && this.action == "wall" && this.wall) {
         if (this.displayedNodes.get(ID).canAddWallHere()) {
           this.displayedNodes.get(ID).setType("wall");
           this.$store.commit("addWall", this.getPosition(ID));
@@ -240,7 +249,7 @@ export default {
       }
     },
     stopWall(ID) {
-      if (this.action == "wall" && this.wall) {
+      if ( this.editGrid && this.action == "wall" && this.wall) {
         if (this.displayedNodes.get(ID).canAddWallHere()) {
           this.displayedNodes.get(ID).setType("wall");
           this.$store.commit("addWall", this.getPosition(ID));
@@ -393,22 +402,30 @@ export default {
       let sensors = this.$store.state.sensors;
       for (let i = 0; i < sensors.length; i++) {
         for (let j = 0; j < sensors[i].physicalArea.length; j++) {
-          this.displayedNodes.get(this.getID(sensors[i].physicalArea[j])).reset();
+          this.displayedNodes
+            .get(this.getID(sensors[i].physicalArea[j]))
+            .reset();
           this.updateClass(this.getID(sensors[i].physicalArea[j]));
         }
         for (let j = 0; j < sensors[i].interactArea.length; j++) {
-          this.displayedNodes.get(this.getID(sensors[i].interactArea[j])).reset();
+          this.displayedNodes
+            .get(this.getID(sensors[i].interactArea[j]))
+            .reset();
           this.updateClass(this.getID(sensors[i].interactArea[j]));
         }
       }
       let entities = this.$store.state.entities;
       for (let i = 0; i < entities.length; i++) {
         for (let j = 0; j < entities[i].physicalArea.length; j++) {
-          this.displayedNodes.get(this.getID(entities[i].physicalArea[j])).reset();
+          this.displayedNodes
+            .get(this.getID(entities[i].physicalArea[j]))
+            .reset();
           this.updateClass(this.getID(entities[i].physicalArea[j]));
         }
         for (let j = 0; j < entities[i].interactArea.length; j++) {
-          this.displayedNodes.get(this.getID(entities[i].interactArea[j])).reset();
+          this.displayedNodes
+            .get(this.getID(entities[i].interactArea[j]))
+            .reset();
           this.updateClass(this.getID(entities[i].interactArea[j]));
         }
       }
@@ -536,11 +553,11 @@ export default {
       this.addEntity();
     });
   },
-  watch:{
-    filterText:function(){
+  watch: {
+    filterText: function () {
       this.updateSensorEntityNodes();
-    }
-  }
+    },
+  },
 };
 </script>
 <style>

@@ -17,6 +17,7 @@ export default new Vuex.Store({
     passiveSensors: JSON.parse(sessionStorage.getItem("passiveSensors")) || Array<string>(),
     activeSensors: JSON.parse(sessionStorage.getItem("activeSensors")) || Array<string>(),
     filterText: sessionStorage.getItem("filterText") || "",
+    activities: sessionStorage.getItem("activities") || "",
   },
 
   mutations: {
@@ -31,6 +32,10 @@ export default new Vuex.Store({
     updateFilterText(state,text:string){
       state.filterText=text;
       sessionStorage.setItem("filterText",state.filterText);
+    },
+    updateActivities(state,text:string){
+      state.activities=text;
+      sessionStorage.setItem("activities",state.activities);
     },
     addPassiveSensors(state, newPassive: string[]) {
       state.passiveSensors = newPassive;

@@ -7,7 +7,7 @@
         </v-list-item-content>
       </v-list-item>
       <v-divider />
-      <v-list dense nav>
+      <v-list dense>
         <v-list-item
           v-for="item in items"
           :key="item.title"
@@ -24,14 +24,24 @@
             v-model="filterText"
           ></v-text-field>
         </v-list-item>
+        <v-list-item @click="showUploadDownload = true">
+          <v-list-item-content>
+            <v-list-item-title>Upload / Download</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
     </v-card>
+    <v-overlay :value="showUploadDownload" :light="true" :dark="false">
+      <UploadDownload @closeCard="showUploadDownload=false" />
+    </v-overlay>
   </div>
 </template>
 
 <script>
+import UploadDownload from "@/components/widgets/uploadDownload.vue";
 export default {
   name: "FloorPlanMenu",
+  components: { UploadDownload },
   data() {
     return {
       items: [
@@ -46,7 +56,8 @@ export default {
       ],
       y: window.innerHeight - 57,
       x: window.innerWidth * 0.15,
-      filterText:this.$store.state.filterText,
+      filterText: this.$store.state.filterText,
+      showUploadDownload: false,
     };
   },
   methods: {
@@ -59,9 +70,9 @@ export default {
     },
   },
   watch: {
-    filterText: function(newText) {
-      this.$store.commit("updateFilterText",newText);
-    }
-  } 
+    filterText: function (newText) {
+      this.$store.commit("updateFilterText", newText);
+    },
+  },
 };
 </script>

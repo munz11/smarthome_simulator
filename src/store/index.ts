@@ -9,6 +9,7 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     agent: JSON.parse(sessionStorage.getItem("agent")) || new position(0, 0),
+    agentSpeed: sessionStorage.getItem("agentSpeed") || "1",
     sensors: JSON.parse(sessionStorage.getItem("sensors")) || Array<sensor>(),
     entities: JSON.parse(sessionStorage.getItem("entities")) || Array<entity>(),
     walls: JSON.parse(sessionStorage.getItem("walls")) || Array<position>(),
@@ -22,6 +23,10 @@ export default new Vuex.Store({
     addActiveSensors(state, newActive: string[]) {
       state.activeSensors = newActive;
       sessionStorage.setItem("activeSensors", JSON.stringify(state.activeSensors));
+    },
+    updateAgentSpeed(state,newSpeed:number){
+      state.agentSpeed=newSpeed.toString();
+      sessionStorage.setItem("agentSpeed",state.agentSpeed);
     },
     updateFilterText(state,text:string){
       state.filterText=text;
@@ -60,10 +65,12 @@ export default new Vuex.Store({
       state.entities = Array<entity>();
       state.walls = Array<position>();
       state.agent = new position(0, 0);
+      state.agentSpeed="1";
       sessionStorage.setItem("sensors", JSON.stringify(state.sensors));
       sessionStorage.setItem("entities", JSON.stringify(state.entities));
       sessionStorage.setItem("walls", JSON.stringify(state.walls));
       sessionStorage.setItem("agent", JSON.stringify(state.agent));
+      sessionStorage.setItem("agentSpeed",state.agentSpeed);
     },
   },
   getters: {

@@ -119,7 +119,7 @@ export default {
         });
       }
 
-      if (this.interactArea > 0) {
+      if (this.interactArea.size > 0) {
         let activeSensors = this.$store.state.activeSensors;
         for (let i = 0; i < activeSensors.length; i++) {
           let el = activeSensors[i].split(".");

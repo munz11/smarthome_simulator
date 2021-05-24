@@ -41,6 +41,21 @@
         @closeForm="closeFormEntity"
       />
     </v-overlay>
+    <v-overlay :value="dbPhysical" :light="true" :dark="false">
+      <DbOnPhysical
+        @closeCard="dbPhysical = false"
+        @addInteract="addinteract"
+        @removePhysical="removephysical"
+      />
+    </v-overlay>
+    <v-overlay :value="dbBoth" :light="true" :dark="false">
+      <DbOnBoth
+        @closeCard="dbBoth = false"
+        @removeOnlyInteract="removeOnlyInteract"
+        @removeOnlyPhysical="removeOnlyPhysical"
+        @removeBoth="removeBoth"
+      />
+    </v-overlay>
   </div>
 </template>
 
@@ -49,11 +64,13 @@ import node from "@/models/node";
 import position from "@/models/position";
 import AddSensor from "@/components/widgets/addSensor.vue";
 import AddEntity from "@/components/widgets/addEntity.vue";
+import DbOnPhysical from "@/components/widgets/dbOnPhysical.vue";
+import DbOnBoth from "@/components/widgets/dbOnBoth.vue";
 
 export default {
   name: "Grid",
   props: ["editGrid"],
-  components: { AddSensor, AddEntity },
+  components: { AddSensor, AddEntity, DbOnPhysical, DbOnBoth },
   data() {
     return {
       x: window.innerWidth * 0.83,
@@ -76,6 +93,9 @@ export default {
       clickTimer: null,
       delay: 250,
       filterText: this.$store.state.filterText,
+      dbPhysical: false,
+      saveNode: null,
+      dbBoth: false,
     };
   },
   methods: {
@@ -151,7 +171,7 @@ export default {
             this.snackBar = true;
           }
         }
-        this.continueAddSensor(); 
+        this.continueAddSensor();
       }
       if (this.action == "entity") {
         if (this.interactArea.size > 0 || this.physicalArea.size > 0) {
@@ -204,15 +224,32 @@ export default {
       this.$store.commit("updateAgent", this.getPosition(ID)); //update store
     },
     dbClick(ID) {
-      if (
-        this.action == "wall" &&
-        this.displayedNodes.get(ID).type.includes("wall")
-      ) {
+      if (this.action == "wall" && this.displayedNodes.get(ID).hasWall()) {
         this.displayedNodes.get(ID).removeWall();
         this.$store.commit("removeWall", this.getPosition(ID));
         this.updateClass(ID);
-      }
-      if (
+      } else if (
+        (this.action == "sensor" || this.action == "entity") &&
+        this.interactArea.has(ID) &&
+        !this.physicalArea.has(ID)
+      ) {
+        this.interactArea.delete(ID);
+        this.updateClass(ID);
+      } else if (
+        (this.action == "sensor" || this.action == "entity") &&
+        !this.interactArea.has(ID) &&
+        this.physicalArea.has(ID)
+      ) {
+        this.dbPhysical = true;
+        this.saveNode = ID;
+      } else if (
+        (this.action == "sensor" || this.action == "entity") &&
+        this.interactArea.has(ID) &&
+        this.physicalArea.has(ID)
+      ) {
+        this.dbBoth = true;
+        this.saveNode = ID;
+      } else if (
         this.action == "sensor" &&
         this.displayedNodes.get(ID).canAddSensorInteract()
       ) {
@@ -222,8 +259,7 @@ export default {
         } else {
           this.updateClassTemp(ID, "interact");
         }
-      }
-      if (
+      } else if (
         this.action == "entity" &&
         this.displayedNodes.get(ID).canAddEntityInteract()
       ) {
@@ -234,6 +270,60 @@ export default {
           this.updateClassTemp(ID, "interact");
         }
       }
+    },
+    removephysical() {
+      this.physicalArea.delete(this.saveNode);
+      this.updateClass(this.saveNode);
+      this.dbPhysical = false;
+      this.saveNode = null;
+    },
+    removeOnlyInteract() {
+      this.interactArea.delete(this.saveNode);
+      if (this.action == "sensor") {
+        this.updateClassTemp(this.saveNode, "sensorPhysical");
+      } else {
+        this.updateClassTemp(this.saveNode, "entityPhysical");
+      }
+      this.dbBoth = false;
+      this.saveNode = null;
+    },
+    removeOnlyPhysical() {
+      this.physicalArea.delete(this.saveNode);
+      this.updateClassTemp(this.saveNode, "interact");
+      this.dbBoth = false;
+      this.saveNode = null;
+    },
+    removeBoth() {
+      this.physicalArea.delete(this.saveNode);
+      this.interactArea.delete(this.saveNode);
+      this.updateClass(this.saveNode);
+      this.dbBoth = false;
+      this.saveNode = null;
+    },
+    addinteract() {
+      if (
+        this.action == "sensor" &&
+        this.displayedNodes.get(this.saveNode).canAddSensorInteract()
+      ) {
+        this.interactArea.add(this.saveNode);
+        if (this.physicalArea.has(this.saveNode)) {
+          this.updateClassTemp(this.saveNode, "overlap");
+        } else {
+          this.updateClassTemp(this.saveNode, "interact");
+        }
+      } else if (
+        this.action == "entity" &&
+        this.displayedNodes.get(this.saveNode).canAddEntityInteract()
+      ) {
+        this.interactArea.add(this.saveNode);
+        if (this.physicalArea.has(this.saveNode)) {
+          this.updateClassTemp(this.saveNode, "overlap");
+        } else {
+          this.updateClassTemp(this.saveNode, "interact");
+        }
+      }
+      this.dbPhysical = false;
+      this.saveNode = null;
     },
     getPosition(ID) {
       let coords = ID.split("-");
@@ -312,8 +402,8 @@ export default {
       this.physicalArea.clear();
       this.interactArea.clear();
     },
-    closeFormSensor(){
-      this.sensorForm=false;
+    closeFormSensor() {
+      this.sensorForm = false;
       this.physicalArea.clear();
       this.interactArea.clear();
     },
@@ -365,7 +455,7 @@ export default {
       this.physicalArea.clear();
       this.interactArea.clear();
     },
-    closeFormEntity(){
+    closeFormEntity() {
       this.entityForm = false;
       this.physicalArea.clear();
       this.interactArea.clear();

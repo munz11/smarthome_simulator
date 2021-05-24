@@ -13,6 +13,9 @@ export default class node {
         this.entityName = new Set();
         this.walkable = false;
     }
+    hasWall():boolean{
+        return this.type.includes("wall");
+    }
     setType(type: string) {
         this.type.push(type);
     }

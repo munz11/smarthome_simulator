@@ -1,7 +1,9 @@
 <template>
   <div>
-    <v-card class="mx-auto" max-width="500" outlined elevation="2" shaped>
-      <v-card-title>Please enter further details about the entity</v-card-title>
+    <v-card class="mx-auto" max-width="600" outlined elevation="2" shaped>
+      <v-card-title>Please enter further details about the entity
+        <v-btn text @click="close"> &times; </v-btn>
+      </v-card-title>
       <v-card-text>
         <v-form v-model="isValid">
           <v-text-field
@@ -46,6 +48,9 @@ export default {
       );
       this.$store.commit("addEntity", entityObject);
       this.$emit("closeEntityForm");
+    },
+    close(){
+      this.$emit("closeForm");
     },
     getListPositions(positions) {
       let positionObjects = [];

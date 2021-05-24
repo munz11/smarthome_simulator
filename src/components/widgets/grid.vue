@@ -30,6 +30,7 @@
         :physicalArea="physicalArea"
         :interactArea="interactArea"
         @closeSensorForm="completeAddSensor"
+        @closeForm="closeFormSensor"
       />
     </v-overlay>
     <v-overlay :value="entityForm" :light="true" :dark="false">
@@ -37,6 +38,7 @@
         :physicalArea="physicalArea"
         :interactArea="interactArea"
         @closeEntityForm="completeAddEntity"
+        @closeForm="closeFormEntity"
       />
     </v-overlay>
   </div>
@@ -307,8 +309,13 @@ export default {
       this.interactArea.forEach((ID) => {
         this.updateClass(ID);
       });
-      this.physicalArea = new Set();
-      this.interactArea = new Set();
+      this.physicalArea.clear();
+      this.interactArea.clear();
+    },
+    closeFormSensor(){
+      this.sensorForm=false;
+      this.physicalArea.clear();
+      this.interactArea.clear();
     },
     showSensorOnNode(sensor) {
       for (let i = 0; i < sensor.interactArea.length; i++) {
@@ -355,8 +362,13 @@ export default {
       this.interactArea.forEach((ID) => {
         this.updateClass(ID);
       });
-      this.physicalArea = new Set();
-      this.interactArea = new Set();
+      this.physicalArea.clear();
+      this.interactArea.clear();
+    },
+    closeFormEntity(){
+      this.entityForm = false;
+      this.physicalArea.clear();
+      this.interactArea.clear();
     },
     showEntityOnNode(entity) {
       for (let i = 0; i < entity.interactArea.length; i++) {

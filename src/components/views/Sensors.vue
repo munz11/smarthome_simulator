@@ -22,25 +22,30 @@
         </template>
       </v-data-table>
     </b-container>
-        <v-overlay :value="deleteDialogue" :light="true" :dark="false">
+    <v-overlay :value="deleteDialogue" :light="true" :dark="false">
       <DeleteDialogue
         @closeCard="deleteDialogue = false"
         @deleteItem="deleteItemConfirm"
       />
+    </v-overlay>
+    <v-overlay :value="editSensor" :light="true" :dark="false">
+      <EditSensor :sensor="saveItem" @closeForm="editSensor = false" />
     </v-overlay>
   </div>
 </template>
 
 <script>
 import DeleteDialogue from "@/components/widgets/deleteDialogue.vue";
+import EditSensor from "@/components/widgets/editSensor.vue";
 export default {
   name: "Sensors",
-  components: { DeleteDialogue },
+  components: { DeleteDialogue, EditSensor },
   data() {
     return {
       search: "",
-      deleteDialogue:false,
-      saveItem:null,
+      deleteDialogue: false,
+      saveItem: null,
+      editSensor:false,
       sensors: this.$store.state.sensors,
       headers: [
         {
@@ -69,17 +74,18 @@ export default {
   },
   methods: {
     editItem(item) {
-      console.log(item);
+      this.saveItem=item;
+      this.editSensor=true;
     },
     deleteItem(item) {
       this.saveItem = item;
-      this.deleteDialogue=true;
+      this.deleteDialogue = true;
     },
-    deleteItemConfirm(){
-      this.$store.commit("removeSensor",this.saveItem);
-      this.deleteDialogue=false;
-      this.sensors=this.$store.state.sensors;
-    }
+    deleteItemConfirm() {
+      this.$store.commit("removeSensor", this.saveItem);
+      this.deleteDialogue = false;
+      this.sensors = this.$store.state.sensors;
+    },
   },
 };
 </script>

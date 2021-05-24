@@ -28,19 +28,27 @@
         @deleteItem="deleteItemConfirm"
       />
     </v-overlay>
+        <v-overlay :value="editEntity" :light="true" :dark="false">
+      <EditEntity
+      :entity="saveItem"
+      @closeForm="editEntity=false"
+      />
+    </v-overlay>
   </div>
 </template>
 
 <script>
 import DeleteDialogue from "@/components/widgets/deleteDialogue.vue";
+import EditEntity from "@/components/widgets/editEntity.vue";
 export default {
   name: "Entities",
-  components: { DeleteDialogue },
+  components: { DeleteDialogue, EditEntity},
   data() {
     return {
       search: "",
       deleteDialogue:false,
       saveItem:null,
+      editEntity:false,
       entities: this.$store.state.entities,
       headers: [
         {
@@ -59,7 +67,8 @@ export default {
   },
   methods: {
     editItem(item) {
-      console.log(item);
+      this.saveItem=item;
+      this.editEntity=true;
     },
     deleteItem(item) {
       this.saveItem = item;

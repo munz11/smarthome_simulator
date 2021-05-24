@@ -73,6 +73,16 @@ export default new Vuex.Store({
       state.entities = state.entities.filter((e:entity)=>!(e.name==entity.name));
       sessionStorage.setItem("entities", JSON.stringify(state.entities));
     },
+    editEntity(state,entity:entity){
+      state.entities = state.entities.filter((e:entity)=>!(e.name==entity.name));
+      state.entities.push(entity);
+      sessionStorage.setItem("entities", JSON.stringify(state.entities));
+    },
+    editSensor(state,sensor:sensor){
+      state.sensors = state.sensors.filter((e:sensor)=>!(e.name==sensor.name));
+      state.sensors.push(sensor);
+      sessionStorage.setItem("sensors", JSON.stringify(state.sensors));
+    },
     updateAgent(state, newAgentPosition: position) {
       state.agent = newAgentPosition;
       sessionStorage.setItem("agent", JSON.stringify(state.agent));

@@ -1,9 +1,9 @@
 <template>
-  <div class="Sensors">
+  <div class="Entities">
     <b-container fluid>
       <v-data-table
         :headers="headers"
-        :items="sensors"
+        :items="entities"
         item-key="id"
         class="elevation-1"
         :search="search"
@@ -34,14 +34,14 @@
 <script>
 import DeleteDialogue from "@/components/widgets/deleteDialogue.vue";
 export default {
-  name: "Sensors",
+  name: "Entities",
   components: { DeleteDialogue },
   data() {
     return {
       search: "",
       deleteDialogue:false,
       saveItem:null,
-      sensors: this.$store.state.sensors,
+      entities: this.$store.state.entities,
       headers: [
         {
           text: "Name",
@@ -49,19 +49,9 @@ export default {
           value: "name",
         },
         {
-          text: "Type",
-          sortable: true,
-          value: "type",
-        },
-        {
           text: "Walkable",
           sortable: false,
           value: "walkable",
-        },
-        {
-          text: "Trigger Frequency (ns)",
-          sortable: true,
-          value: "triggerFrequency",
         },
         { text: "Actions", value: "actions", sortable: false },
       ],
@@ -76,9 +66,9 @@ export default {
       this.deleteDialogue=true;
     },
     deleteItemConfirm(){
-      this.$store.commit("removeSensor",this.saveItem);
+      this.$store.commit("removeEntity",this.saveItem);
       this.deleteDialogue=false;
-      this.sensors=this.$store.state.sensors;
+      this.entities=this.$store.state.entities;
     }
   },
 };

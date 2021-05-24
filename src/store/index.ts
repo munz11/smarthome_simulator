@@ -65,6 +65,14 @@ export default new Vuex.Store({
       state.walls = state.walls.filter((e: position) => !(e.x == wall.x && e.y == wall.y));
       sessionStorage.setItem("walls", JSON.stringify(state.walls));
     },
+    removeSensor(state,sensor:sensor){
+      state.sensors = state.sensors.filter((e:sensor)=>!(e.name == sensor.name));
+      sessionStorage.setItem("sensors", JSON.stringify(state.sensors));
+    },
+    removeEntity(state,entity:entity){
+      state.entities = state.entities.filter((e:entity)=>!(e.name==entity.name));
+      sessionStorage.setItem("entities", JSON.stringify(state.entities));
+    },
     updateAgent(state, newAgentPosition: position) {
       state.agent = newAgentPosition;
       sessionStorage.setItem("agent", JSON.stringify(state.agent));

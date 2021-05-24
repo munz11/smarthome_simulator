@@ -12,7 +12,7 @@
           <v-text-field
             label="Filter"
             hint="Case-sensitive"
-            :v-model="filterText"
+            v-model="filterText"
           ></v-text-field>
         </v-list-item>
         <v-list-item

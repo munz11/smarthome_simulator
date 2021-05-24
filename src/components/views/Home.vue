@@ -62,8 +62,8 @@ export default {
       sideLengthRules:[
         (v) => !!v || "Required",
         (v) =>
-          /^\d*$/.test(v) ||
-          "Enter a number",
+          /^\d*\.?\d+$/.test(v) ||
+          "Enter a number or a decimal followed by a number",
       ],
     };
   },

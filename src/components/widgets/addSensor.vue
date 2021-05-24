@@ -63,7 +63,8 @@ export default {
       nameRules: [(v) => !!v || "Required"],
       typeRules: [(v) => !!v || "Required"],
       triggerFrequencyRules: [
-        (v) => /^\d*$/.test(v) || "Only numbers are allowed",
+        (v) => /^\d*\.?\d+$/.test(v) ||
+          "Enter a number or a decimal followed by a number",
       ],
     };
   },
@@ -75,7 +76,7 @@ export default {
         this.getListPositions(this.interactArea),
         this.triggerFrequency == ""
           ? 0
-          : parseInt(this.triggerFrequency) * 1000000000,
+          : Number(this.triggerFrequency) * 1000000000,
         this.typeOptions.find((option) => option.value == this.type).send,
         this.walkable,
         this.isPassiveType() ? "passive" : "active"

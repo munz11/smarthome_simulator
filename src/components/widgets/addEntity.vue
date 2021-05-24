@@ -33,7 +33,7 @@ export default {
   data() {
     return {
       name: "",
-      walkable: "true",
+      walkable: false,
       isValid: true,
       nameRules: [(v) => !!v || 'Required'],
     };
@@ -44,7 +44,7 @@ export default {
         this.name,
         this.getListPositions(this.interactArea),
         this.getListPositions(this.physicalArea),
-        this.walkable == "true" ? true : false,
+        this.walkable
       );
       this.$store.commit("addEntity", entityObject);
       this.$emit("closeEntityForm");

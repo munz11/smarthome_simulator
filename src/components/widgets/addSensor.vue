@@ -56,7 +56,7 @@ export default {
     return {
       name: "",
       triggerFrequency: "",
-      walkable: "true",
+      walkable: false,
       typeOptions: [],
       type: "",
       isValid: true,
@@ -77,7 +77,7 @@ export default {
           ? 0
           : parseInt(this.triggerFrequency) * 1000000000,
         this.typeOptions.find((option) => option.value == this.type).send,
-        this.walkable == "true" ? true : false,
+        this.walkable,
         this.isPassiveType() ? "passive" : "active"
       );
       this.$store.commit("addSensor", sensorObject);

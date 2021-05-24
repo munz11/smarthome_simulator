@@ -25,17 +25,17 @@ export default new Vuex.Store({
       state.activeSensors = newActive;
       sessionStorage.setItem("activeSensors", JSON.stringify(state.activeSensors));
     },
-    updateAgentSpeed(state,newSpeed:number){
-      state.agentSpeed=newSpeed.toString();
-      sessionStorage.setItem("agentSpeed",state.agentSpeed);
+    updateAgentSpeed(state, newSpeed: number) {
+      state.agentSpeed = newSpeed.toString();
+      sessionStorage.setItem("agentSpeed", state.agentSpeed);
     },
-    updateFilterText(state,text:string){
-      state.filterText=text;
-      sessionStorage.setItem("filterText",state.filterText);
+    updateFilterText(state, text: string) {
+      state.filterText = text;
+      sessionStorage.setItem("filterText", state.filterText);
     },
-    updateActivities(state,text:string){
-      state.activities=text;
-      sessionStorage.setItem("activities",state.activities);
+    updateActivities(state, text: string) {
+      state.activities = text;
+      sessionStorage.setItem("activities", state.activities);
     },
     addPassiveSensors(state, newPassive: string[]) {
       state.passiveSensors = newPassive;
@@ -50,8 +50,16 @@ export default new Vuex.Store({
       sessionStorage.setItem("entities", JSON.stringify(state.entities));
     },
     addWall(state, newWall: position) {
-      state.walls.push(newWall);
-      sessionStorage.setItem("walls", JSON.stringify(state.walls));
+      let foundWall = false;
+      state.walls.forEach((wall:position) => {
+        if(JSON.stringify(wall)===JSON.stringify(newWall)){
+          foundWall=true;
+        }
+      });
+      if (!foundWall) {
+        state.walls.push(newWall);
+        sessionStorage.setItem("walls", JSON.stringify(state.walls));
+      }
     },
     removeWall(state, wall: position) {
       state.walls = state.walls.filter((e: position) => !(e.x == wall.x && e.y == wall.y));
@@ -70,12 +78,12 @@ export default new Vuex.Store({
       state.entities = Array<entity>();
       state.walls = Array<position>();
       state.agent = new position(0, 0);
-      state.agentSpeed="1";
+      state.agentSpeed = "1";
       sessionStorage.setItem("sensors", JSON.stringify(state.sensors));
       sessionStorage.setItem("entities", JSON.stringify(state.entities));
       sessionStorage.setItem("walls", JSON.stringify(state.walls));
       sessionStorage.setItem("agent", JSON.stringify(state.agent));
-      sessionStorage.setItem("agentSpeed",state.agentSpeed);
+      sessionStorage.setItem("agentSpeed", state.agentSpeed);
     },
   },
   getters: {

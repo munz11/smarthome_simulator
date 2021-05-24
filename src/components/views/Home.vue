@@ -74,9 +74,10 @@ export default {
         new floorPlanDetails(
           parseInt(this.width),
           parseInt(this.height),
-          parseInt(this.tileSideLength)
+          Number(this.tileSideLength)
         )
       );
+      this.$store.commit( "clearAllInfoOnGrid");
 
       this.$router.push({ name: "FloorPlan" });
     },

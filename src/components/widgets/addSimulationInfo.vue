@@ -105,11 +105,13 @@
 
 <script>
 import axios from "axios";
+import SockJS from "sockjs-client";
+import Stomp from "webstomp-client";
 export default {
   name: "AddSimulationInfo",
   data: () => {
     return {
-      date:"",
+      date: "",
       time:
         new Date().getHours() +
         ":" +
@@ -127,9 +129,26 @@ export default {
       SnackBar: false,
       isValid: true,
       seed: null,
+      simulationInfo:"",
     };
   },
   methods: {
+    connect() {
+      this.socket = new SockJS("http://localhost:8080/websockets");
+      this.stompClient = Stomp.over(this.socket);
+      this.stompClient.connect(
+        {},
+        () => {
+          console.log("connected to websocket");
+          this.stompClient.subscribe("/SimulationStatus", function (message) {
+            console.log(message.body);
+          });
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
+    },
     submit() {
       let dateObject = new Date();
       let datearray = this.date.split("-");
@@ -154,25 +173,40 @@ export default {
         rootTopic: this.rootTopic,
         seed: this.seed,
       };
-      axios
-        .post(this.$smartHomeBackend.getUrlSimulation(), simulationJson)
-        .then(() => {
-          if(this.mqttOutput){
-            this.text =
-            "The simulation has started, the data can be found at the mqtt host:" +
-            this.mqttHost;
-          }else{
-            this.text =
-            "The simulation has ended."
-          }
-          this.btnText = "Close";
-          this.SnackBar = true;
-        })
-        .catch((err) => {
-          this.text = err;
-          this.btnText = "Close";
-          this.SnackBar = true;
-        });
+      this.socket = new SockJS("http://localhost:8080/websockets");
+      this.stompClient = Stomp.over(this.socket);
+      this.stompClient.connect(
+        {},
+        () => {
+          console.log("connected to websocket");
+          axios
+            .post(this.$smartHomeBackend.getUrlSimulation(), simulationJson)
+            .then(() => {
+              if (this.mqttOutput) {
+                this.text =
+                  "The simulation has started, the data can be found at the mqtt host:" +
+                  this.mqttHost+"\n"+this.simulationInfo;
+              } else {
+                this.text = this.simulationInfo;
+              }
+              this.btnText = "Close";
+              this.SnackBar = true;
+              this.stompClient.disconnect();
+              console.log(this.simulationInfo);
+            })
+            .catch((err) => {
+              this.text = err;
+              this.btnText = "Close";
+              this.SnackBar = true;
+            });
+          this.stompClient.subscribe("/SimulationStatus", (message) => {
+            this.simulationInfo=this.simulationInfo+message.body;
+          });
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
     },
     closeSnackBar() {
       this.text = "";

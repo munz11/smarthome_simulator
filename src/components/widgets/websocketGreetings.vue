@@ -63,23 +63,17 @@ export default {
       }
     },
     connect() {
-      this.socket = new SockJS("http://localhost:8080/gs-guide-websocket");
-      this.stompClient = Stomp.over(this.socket);
-      this.stompClient.connect(
-        {},
-        frame => {
-          this.connected = true;
-          console.log(frame);
-          this.stompClient.subscribe("/topic/greetings", tick => {
-            console.log(tick);
-            this.received_messages.push(tick.body);
-          });
-        },
-        error => {
-          console.log(error);
-          this.connected = false;
-        }
-      );
+      this.socket = new SockJS("http://localhost:8080/websockets");
+      this.stompClient=Stomp.over(this.socket);
+      this.stompClient.connect({},()=>{
+        console.log("connected to websocket");
+        this.stompClient.subscribe("/SimulationStatus",function(message){
+          console.log(message);
+          this.received_messages.push(message.body);
+        })
+      },error =>{
+        console.log(error);
+      });
     },
     disconnect() {
       if (this.stompClient) {

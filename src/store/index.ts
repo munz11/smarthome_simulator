@@ -122,5 +122,19 @@ export default new Vuex.Store({
       }
       return state.sensors;
     },
+    sensorNames: (state,getters) =>{
+      const sensorName:string[] = [];
+      getters.listSensors.forEach(sensor =>{
+        sensorName.push(sensor.name);
+      })
+      return sensorName;
+    },
+    entityNames: state =>{
+      const entityName:string[] = [];
+      state.entities.forEach(entity =>{
+        entityName.push(entity.name);
+      })
+      return entityName;     
+    }
   }
 });

@@ -59,7 +59,7 @@ export default {
       typeOptions: [],
       type: "",
       isValid: true,
-      nameRules: [(v) => !!v || "Required"],
+      nameRules: [(v) => !!v || "Required",(v)=> !this.$store.getters.sensorNames.includes(v)||"Enter a unique name"],
       typeRules: [(v) => !!v || "Required"],
       triggerFrequencyRules: [
         (v) =>

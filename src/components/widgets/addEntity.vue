@@ -35,7 +35,7 @@ export default {
       name: "",
       walkable: false,
       isValid: true,
-      nameRules: [(v) => !!v || 'Required'],
+      nameRules: [(v) => !!v || 'Required', (v)=> !this.$store.getters.entityNames.includes(v)||"Enter a unique name"],
     };
   },
   methods: {

@@ -276,13 +276,43 @@ export default {
         if (!isValid) {
           this.messageFromUpload = JSON.stringify(validate.errors);
         } else {
+          if(this.checkNameUniqueNess()){
           this.updateStore();
-          this.messageFromUpload = "Success. Close the card to update the grid.";
+          this.messageFromUpload = "Success. Close the card to update the grid.";            
+          }else{
+          this.messageFromUpload = "Either the sensors or the entities don't have a unique name. Cannot proceed.";
+          }
         }
       } catch (err) {
         this.messageFromUpload = err;
       }
     },
+    checkNameUniqueNess(){
+      const sensorName = [];
+      const entityName = [];
+      for(let i=0;i<this.jsonData.passiveSensors.length;i++){
+        let newSensor = this.jsonData.passiveSensors[i];
+        if(sensorName.includes(newSensor.name)){
+          return false;
+        }
+        sensorName.push(newSensor.name);
+      }
+      for(let i=0;i<this.jsonData.activeSensors.length;i++){
+        let newSensor = this.jsonData.activeSensors[i];
+        if(sensorName.includes(newSensor.name)){
+          return false;
+        }
+        sensorName.push(newSensor.name);        
+      }
+      for(let i=0;i<this.jsonData.entities.length;i++){
+        let newEntity=this.jsonData.entities[i];
+        if(entityName.includes(newEntity.name)){
+          return false;
+        }
+        entityName.push(newEntity.name);
+      }
+      return true;
+    }
   },
   watch: {
     File: function () {

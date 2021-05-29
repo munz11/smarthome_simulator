@@ -276,13 +276,18 @@ export default {
         if (!isValid) {
           this.messageFromUpload = JSON.stringify(validate.errors);
         } else {
-          this.messageFromUpload = "Success. Close the card to update the grid.";
           this.updateStore();
+          this.messageFromUpload = "Success. Close the card to update the grid.";
+          this.checkStore();
         }
       } catch (err) {
         this.messageFromUpload = err;
       }
     },
+    checkStore(){
+      let sensors = this.$store.state.sensors;
+      console.log(sensors);
+    }
   },
   watch: {
     File: function () {

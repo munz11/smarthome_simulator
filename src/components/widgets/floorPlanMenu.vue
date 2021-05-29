@@ -1,14 +1,6 @@
 <template>
   <div>
     <v-card v-resize="onResize" :height="y" :width="x">
-      <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title class="title">Options </v-list-item-title>
-          <v-list-item-subtitle class="subtitle">{{tooltip}}</v-list-item-subtitle>
-        </v-list-item-content>
-      </v-list-item>
-
-      <v-divider />
       <v-list dense>
         <v-list-item>
           <v-text-field
@@ -33,6 +25,14 @@
           </v-list-item-content>
         </v-list-item>
       </v-list>
+      <v-divider />
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-subtitle class="text-wrap">{{
+            tooltip
+          }}</v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
     </v-card>
     <v-overlay :value="showUploadDownload" :light="true" :dark="false">
       <UploadDownload @closeCard="closeCardRefresh" />
@@ -61,7 +61,7 @@ export default {
       x: window.innerWidth * 0.15,
       filterText: this.$store.state.filterText,
       showUploadDownload: false,
-      tooltip:"x-y",
+      tooltip: "x-y",
     };
   },
   methods: {
@@ -83,9 +83,9 @@ export default {
     },
   },
   mounted() {
-    this.$root.$on("tooltip",(data)=>{
-      this.tooltip=data;
-    })
-  }
+    this.$root.$on("tooltip", (data) => {
+      this.tooltip = data;
+    });
+  },
 };
 </script>

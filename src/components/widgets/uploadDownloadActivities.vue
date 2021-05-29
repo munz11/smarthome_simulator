@@ -112,8 +112,8 @@ export default {
         if (!isValid) {
           this.messageFromUpload = JSON.stringify(validate.errors);
         } else {
-          this.messageFromUpload = "Success";
           this.updateInput(json.input);
+          this.messageFromUpload = "Success";
           //refresh page
           this.$router.go();
         }

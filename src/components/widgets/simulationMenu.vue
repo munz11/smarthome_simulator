@@ -5,14 +5,12 @@
         <v-list-item>
           <AddInput />
         </v-list-item>
-        <v-divider />
         <v-list-item>
-          <v-list-item-content>
-            <v-list-item-title class="title">Options </v-list-item-title>
-            <v-list-item-subtitle class="subtitle">{{
-              tooltip
-            }}</v-list-item-subtitle>
-          </v-list-item-content>
+          <v-text-field
+            label="Filter"
+            hint="Case-sensitive"
+            v-model="filterText"
+          ></v-text-field>
         </v-list-item>
         <v-list-item
           v-for="item in items"
@@ -27,6 +25,13 @@
       <v-list-item @click="showUploadDownload = true">
         <v-list-item-content>
           <v-list-item-title>Upload / Download</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-subtitle class="text-wrap">{{
+            tooltip
+          }}</v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
     </v-card>
@@ -54,6 +59,7 @@ export default {
       x: window.innerWidth * 0.15,
       showUploadDownload: false,
       tooltip: "x-y",
+      filterText: this.$store.state.filterText,
     };
   },
   methods: {
@@ -69,6 +75,11 @@ export default {
     this.$root.$on("tooltip", (data) => {
       this.tooltip = data;
     });
+  },
+  watch: {
+    filterText: function (newText) {
+      this.$store.commit("updateFilterText", newText);
+    },
   },
 };
 </script>

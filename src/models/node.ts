@@ -84,19 +84,19 @@ export default class node {
         }
     }
     setToString(setToConsider: Set<string>): string {
-        return Array.from(setToConsider).join(',');
+        return Array.from(setToConsider).join(', ');
     }
     displayNodeInfo(): string {
         //x-y,sensornames,entitynames
         if (this.sensorName.size == 0) {
             if (this.entityName.size !== 0) {
-                return this.id + "," + this.setToString(this.entityName);
+                return this.id + ", " + this.setToString(this.entityName);
             }
             return this.id;
         } else if (this.entityName.size == 0) {
-            return this.id + "," + this.setToString(this.sensorName);
+            return this.id + ", " + this.setToString(this.sensorName);
         }
-        return this.id + "," + this.setToString(this.sensorName) + this.setToString(this.entityName);
+        return this.id + ", " + this.setToString(this.sensorName) + this.setToString(this.entityName);
     }
     canMoveAgentHere(): boolean {
         if (this.type.includes("wall")) {

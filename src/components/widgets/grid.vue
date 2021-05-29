@@ -9,7 +9,7 @@
             :id="col + '-' + row"
             :class="getClass(col + '-' + row)"
             @mousedown="startWall(col + '-' + row)"
-            @mouseover="continueWall(col + '-' + row)"
+            @mouseover="mouseover(col + '-' + row)"
             @mouseup="stopWall(col + '-' + row)"
             @click="handleClick(col + '-' + row)"
           ></td>
@@ -340,8 +340,11 @@ export default {
         this.updateClass(ID);
       }
     },
-    continueWall(ID) {
+    mouseover(ID){
       this.show(ID);
+      this.continueWall(ID);
+    },
+    continueWall(ID) {
       if (this.editGrid && this.action == "wall" && this.wall) {
         if (this.displayedNodes.get(ID).canAddWallHere()) {
           this.displayedNodes.get(ID).setType("wall");

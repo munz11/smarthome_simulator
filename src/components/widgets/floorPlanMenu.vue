@@ -4,8 +4,10 @@
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title class="title">Options </v-list-item-title>
+          <v-list-item-subtitle class="subtitle">{{tooltip}}</v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
+
       <v-divider />
       <v-list dense>
         <v-list-item>
@@ -59,6 +61,7 @@ export default {
       x: window.innerWidth * 0.15,
       filterText: this.$store.state.filterText,
       showUploadDownload: false,
+      tooltip:"x-y",
     };
   },
   methods: {
@@ -79,5 +82,10 @@ export default {
       this.$store.commit("updateFilterText", newText);
     },
   },
+  mounted() {
+    this.$root.$on("tooltip",(data)=>{
+      this.tooltip=data;
+    })
+  }
 };
 </script>

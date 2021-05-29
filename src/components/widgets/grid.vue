@@ -8,7 +8,6 @@
             :key="col"
             :id="col + '-' + row"
             :class="getClass(col + '-' + row)"
-            v-tooltip.hover="show(col + '-' + row)"
             @mousedown="startWall(col + '-' + row)"
             @mouseover="continueWall(col + '-' + row)"
             @mouseup="stopWall(col + '-' + row)"
@@ -342,6 +341,7 @@ export default {
       }
     },
     continueWall(ID) {
+      this.show(ID);
       if (this.editGrid && this.action == "wall" && this.wall) {
         if (this.displayedNodes.get(ID).canAddWallHere()) {
           this.displayedNodes.get(ID).setType("wall");
@@ -482,7 +482,7 @@ export default {
       return position.x.toString() + "-" + position.y.toString();
     },
     show(ID) {
-      return this.displayedNodes.get(ID).displayNodeInfo();
+      this.$root.$emit("tooltip",this.displayedNodes.get(ID).displayNodeInfo());
     },
     updateNodesToStore() {
       //assumes that the store contains the allowed node types, so no need to check if the agent or a wall can be added here

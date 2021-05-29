@@ -6,6 +6,14 @@
           <AddInput />
         </v-list-item>
         <v-divider />
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title class="title">Options </v-list-item-title>
+            <v-list-item-subtitle class="subtitle">{{
+              tooltip
+            }}</v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
         <v-list-item
           v-for="item in items"
           :key="item.title"
@@ -45,6 +53,7 @@ export default {
       y: window.innerHeight - 57,
       x: window.innerWidth * 0.15,
       showUploadDownload: false,
+      tooltip: "x-y",
     };
   },
   methods: {
@@ -55,6 +64,11 @@ export default {
       this.y = window.innerHeight - 57;
       this.x = window.innerWidth * 0.15;
     },
+  },
+  mounted() {
+    this.$root.$on("tooltip", (data) => {
+      this.tooltip = data;
+    });
   },
 };
 </script>

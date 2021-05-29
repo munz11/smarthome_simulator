@@ -84,11 +84,7 @@ export default class node {
         }
     }
     setToString(setToConsider: Set<string>): string {
-        let value = "";
-        setToConsider.forEach(val => {
-            value += val + ",";
-        })
-        return value;
+        return Array.from(setToConsider).join(',');
     }
     displayNodeInfo(): string {
         //x-y,sensornames,entitynames

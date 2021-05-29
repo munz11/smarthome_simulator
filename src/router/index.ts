@@ -5,7 +5,6 @@ import FloorPlan from "../components/views/FloorPlan.vue";
 import Simulation from "../components/views/Simulation.vue";
 import Sensors from "../components/views/Sensors.vue";
 import Entities from "../components/views/Entities.vue";
-import WebSocket from "../components/views/WebSocket.vue";
 
 Vue.use(VueRouter);
 
@@ -34,11 +33,6 @@ const routes: Array<RouteConfig> = [
     path: "/Simulation",
     name: "Simulation",
     component: Simulation,
-  },
-  {
-    path: "/WebSocket",
-    name: "WebSocket",
-    component: WebSocket,
   }
 ];
 

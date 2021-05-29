@@ -112,12 +112,7 @@ export default {
   data: () => {
     return {
       date: "",
-      time:
-        new Date().getHours() +
-        ":" +
-        new Date().getMinutes() +
-        ":" +
-        new Date().getSeconds(),
+      time:"",
       instantSimulation: false,
       relativeTime: 1,
       mqttOutput: false,
@@ -133,22 +128,6 @@ export default {
     };
   },
   methods: {
-    connect() {
-      this.socket = new SockJS("http://localhost:8080/websockets");
-      this.stompClient = Stomp.over(this.socket);
-      this.stompClient.connect(
-        {},
-        () => {
-          console.log("connected to websocket");
-          this.stompClient.subscribe("/SimulationStatus", function (message) {
-            console.log(message.body);
-          });
-        },
-        (error) => {
-          console.log(error);
-        }
-      );
-    },
     submit() {
       let dateObject = new Date();
       let datearray = this.date.split("-");
@@ -178,7 +157,6 @@ export default {
       this.stompClient.connect(
         {},
         () => {
-          console.log("connected to websocket");
           axios
             .post(this.$smartHomeBackend.getUrlSimulation(), simulationJson)
             .then(() => {
@@ -192,7 +170,6 @@ export default {
               this.btnText = "Close";
               this.SnackBar = true;
               this.stompClient.disconnect();
-              console.log(this.simulationInfo);
             })
             .catch((err) => {
               this.text = err;

@@ -46,7 +46,7 @@ export default {
       deleteDialogue: false,
       saveItem: null,
       editSensor:false,
-      sensors: this.$store.state.sensors,
+      sensors: this.$store.getters.listSensors,
       headers: [
         {
           text: "Name",
@@ -84,7 +84,7 @@ export default {
     deleteItemConfirm() {
       this.$store.commit("removeSensor", this.saveItem);
       this.deleteDialogue = false;
-      this.sensors = this.$store.state.sensors;
+      this.sensors = this.$store.getters.listSensors;
     },
   },
 };

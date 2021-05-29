@@ -6,11 +6,13 @@ import floorPlanDetails from "../models/floorPlanDetails";
 import entity from "../models/entity";
 Vue.use(Vuex);
 
+
+
 export default new Vuex.Store({
   state: {
     agent: JSON.parse(sessionStorage.getItem("agent")) || new position(0, 0),
     agentSpeed: sessionStorage.getItem("agentSpeed") || "1",
-    sensors: JSON.parse(sessionStorage.getItem("sensors")) || Array<sensor>(),
+    sensors: Array<sensor>(),
     entities: JSON.parse(sessionStorage.getItem("entities")) || Array<entity>(),
     walls: JSON.parse(sessionStorage.getItem("walls")) || Array<position>(),
     floorPlanDetails: JSON.parse(sessionStorage.getItem("floorPlanDetails")) || new floorPlanDetails(0, 0, 0),
@@ -110,6 +112,15 @@ export default new Vuex.Store({
     },
     lastEntityAdded: state => {
       return state.entities[state.entities.length - 1];
-    }
+    },
+    listSensors: state =>{
+      if(state.sensors.length==0 && sessionStorage.getItem("sensors")!==null){
+        const sensorsObject = JSON.parse(sessionStorage.getItem("sensors"));
+        for(let i=0;i<sensorsObject.length;i++){
+          state.sensors.push(new sensor(sensorsObject[i].name,sensorsObject[i].physicalArea,sensorsObject[i].interactArea,sensorsObject[i].triggerFrequency,sensorsObject[i].type,sensorsObject[i].walkable,sensorsObject[i].sensorType));
+        }
+      }
+      return state.sensors;
+    },
   }
 });

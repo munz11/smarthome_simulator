@@ -99,7 +99,7 @@ export default {
       exportFromJSON({ data, fileName, exportType });
     },
     getPassiveActiveSensors() {
-      let sensors = this.$store.state.sensors;
+      let sensors = this.$store.getters.listSensors;
       for (let i = 0; i < sensors.length; i++) {
         if (sensors[i].isPassive()) {
           this.passiveSensors.push(sensors[i].getPassiveSensor());
@@ -278,16 +278,11 @@ export default {
         } else {
           this.updateStore();
           this.messageFromUpload = "Success. Close the card to update the grid.";
-          this.checkStore();
         }
       } catch (err) {
         this.messageFromUpload = err;
       }
     },
-    checkStore(){
-      let sensors = this.$store.state.sensors;
-      console.log(sensors);
-    }
   },
   watch: {
     File: function () {

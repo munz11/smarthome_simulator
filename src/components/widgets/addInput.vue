@@ -82,7 +82,7 @@ export default {
         });
     },
     getPassiveActiveSensors() {
-      let sensors = this.$store.state.sensors;
+      let sensors = this.$store.getters.listSensors;
       for (let i = 0; i < sensors.length; i++) {
         if (sensors[i].isPassive()) {
           this.passiveSensors.push(sensors[i].getPassiveSensor());

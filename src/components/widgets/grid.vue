@@ -496,7 +496,7 @@ export default {
       for (let i = 0; i < walls.length; i++) {
         this.displayedNodes.get(this.getID(walls[i])).setType("wall");
       }
-      let sensors = this.$store.state.sensors;
+      let sensors = this.$store.getters.listSensors;
       for (let i = 0; i < sensors.length; i++) {
         this.showSensorOnNode(sensors[i]);
       }
@@ -514,7 +514,7 @@ export default {
         this.displayedNodes.get(this.getID(walls[i])).reset();
         this.updateClass(this.getID(walls[i]));
       }
-      let sensors = this.$store.state.sensors;
+      let sensors = this.$store.getters.listSensors;
       for (let i = 0; i < sensors.length; i++) {
         for (let j = 0; j < sensors[i].physicalArea.length; j++) {
           this.displayedNodes
@@ -612,7 +612,7 @@ export default {
       }
     },
     updateSensorEntityNodes() {
-      let sensors = this.$store.state.sensors;
+      let sensors = this.$store.getters.listSensors;
       for (let i = 0; i < sensors.length; i++) {
         for (let j = 0; j < sensors[i].physicalArea.length; j++) {
           this.updateClass(this.getID(sensors[i].physicalArea[j]));

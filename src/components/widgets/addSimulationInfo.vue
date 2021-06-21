@@ -60,8 +60,7 @@
             <v-text-field
               label="Seed"
               v-model="seed"
-              required
-              hint="156241"
+              hint="3"
               :rules="[
                 (v) => !!v || 'Required',
                 (v) => /^\d*$/.test(v) || 'Enter a number',

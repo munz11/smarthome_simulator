@@ -10,14 +10,14 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    agent: JSON.parse(sessionStorage.getItem("agent")) || new position(0, 0),
+    agent: JSON.parse(""+sessionStorage.getItem("agent")) || new position(0, 0),
     agentSpeed: sessionStorage.getItem("agentSpeed") || "1",
     sensors: Array<sensor>(),
-    entities: JSON.parse(sessionStorage.getItem("entities")) || Array<entity>(),
-    walls: JSON.parse(sessionStorage.getItem("walls")) || Array<position>(),
-    floorPlanDetails: JSON.parse(sessionStorage.getItem("floorPlanDetails")) || new floorPlanDetails(0, 0, 0),
-    passiveSensors: JSON.parse(sessionStorage.getItem("passiveSensors")) || Array<string>(),
-    activeSensors: JSON.parse(sessionStorage.getItem("activeSensors")) || Array<string>(),
+    entities: JSON.parse(""+sessionStorage.getItem("entities")) || Array<entity>(),
+    walls: JSON.parse(""+sessionStorage.getItem("walls")) || Array<position>(),
+    floorPlanDetails: JSON.parse(""+sessionStorage.getItem("floorPlanDetails")) || new floorPlanDetails(0, 0, 0),
+    passiveSensors: JSON.parse(""+sessionStorage.getItem("passiveSensors")) || Array<string>(),
+    activeSensors: JSON.parse(""+sessionStorage.getItem("activeSensors")) || Array<string>(),
     filterText: sessionStorage.getItem("filterText") || "",
     activities: sessionStorage.getItem("activities") || "",
   },
@@ -115,7 +115,7 @@ export default new Vuex.Store({
     },
     listSensors: state =>{
       if(state.sensors.length==0 && sessionStorage.getItem("sensors")!==null){
-        const sensorsObject = JSON.parse(sessionStorage.getItem("sensors"));
+        const sensorsObject = JSON.parse(""+sessionStorage.getItem("sensors"));
         for(let i=0;i<sensorsObject.length;i++){
           state.sensors.push(new sensor(sensorsObject[i].name,sensorsObject[i].physicalArea,sensorsObject[i].interactArea,sensorsObject[i].triggerFrequency,sensorsObject[i].type,sensorsObject[i].walkable,sensorsObject[i].sensorType));
         }
@@ -124,14 +124,14 @@ export default new Vuex.Store({
     },
     sensorNames: (state,getters) =>{
       const sensorName:string[] = [];
-      getters.listSensors.forEach(sensor =>{
+      getters.listSensors.forEach((sensor:any) =>{
         sensorName.push(sensor.name);
       })
       return sensorName;
     },
     entityNames: state =>{
       const entityName:string[] = [];
-      state.entities.forEach(entity =>{
+      state.entities.forEach((entity:any) =>{
         entityName.push(entity.name);
       })
       return entityName;     

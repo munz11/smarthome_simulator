@@ -1,7 +1,7 @@
 export default class smartHomeBackend {
   url: { protocol: string; hostname: string };
   constructor() {
-    this.url = { protocol: "http", hostname: "localhost:8080" };
+    this.url = { protocol: "https", hostname: "smart-home-simulator-backend.herokuapp.com" };
   }
 
   getUrl(): string {

@@ -136,7 +136,7 @@ export default {
       mqttPort: "1883",
       rootTopic: "smartHome",
       isValid: true,
-      seed: 0,
+      seed: "",
       simulationInfo: "",
       infoCard: true,
     };
@@ -175,7 +175,7 @@ export default {
           axios
             .post(this.$smartHomeBackend.getUrlSimulation(), simulationJson)
             .then(() => {
-              this.stompClient.disconnect();
+              setTimeout(() => this.stompClient.disconnect(), 2000);
             })
             .catch((err) => {
               this.simulationInfo = err;

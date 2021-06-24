@@ -70,7 +70,6 @@ export default {
     },
     closeCardRefresh() {
       this.showUploadDownload = false;
-      this.$router.go();
     },
     onResize() {
       this.y = window.innerHeight - 57;

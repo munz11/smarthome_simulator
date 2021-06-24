@@ -64,6 +64,7 @@ export default {
         (v) =>
           /^\d*\.?\d+$/.test(v) ||
           "Enter a number or a decimal followed by a number",
+        (v) => v != 0 || "Enter a positive number"
       ],
     };
   },

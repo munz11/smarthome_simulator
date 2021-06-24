@@ -559,19 +559,19 @@ export default {
       this.btnText = "Done";
       this.snackBar = true;
     },
-    panLeft() {
+    panRight(){
       let val = this.currentCols.length;
-      if (this.maxCol - this.currentCols.length > 0) {
+      if (this.maxCol - this.currentCols.length > 0 && this.currentCols[val-1]!==(this.maxCol - 1)) {
         let el = this.currentCols[val - 1] + 1;
         this.currentCols.shift();
         this.currentCols.push(el);
       } else {
-        this.text = "Cannot move towards left.";
+        this.text = "Cannot move towards right.";
         this.btnText = "Close";
         this.snackBar = true;
       }
     },
-    panRight() {
+     panLeft() {
       if (
         this.maxCol - this.currentCols.length > 0 &&
         this.currentCols[0] !== 0
@@ -580,7 +580,7 @@ export default {
         this.currentCols.pop();
         this.currentCols.unshift(el);
       } else {
-        this.text = "Cannot move towards right.";
+        this.text = "Cannot move towards left.";
         this.btnText = "Close";
         this.snackBar = true;
       }

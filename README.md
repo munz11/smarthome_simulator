@@ -1,4 +1,9 @@
 # smarthome_simulator
+### prerequisite
+```
+install node.js
+```
+
 
 ## Project setup
 ```

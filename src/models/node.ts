@@ -96,7 +96,7 @@ export default class node {
         } else if (this.entityName.size == 0) {
             return this.id + ", " + this.setToString(this.sensorName);
         }
-        return this.id + ", " + this.setToString(this.sensorName) + this.setToString(this.entityName);
+        return this.id + ", " + this.setToString(this.sensorName) + ", "+ this.setToString(this.entityName);
     }
     canMoveAgentHere(): boolean {
         if (this.type.includes("wall")) {

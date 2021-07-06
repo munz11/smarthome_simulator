@@ -3,7 +3,7 @@ export default class node {
     id: string; //position on the grid x-y
     sensorName: Set<string>; // a node can contain multiple sensors 
     entityName: Set<string>; // a node can contain multiple entity names
-    walkable: boolean;
+    walkable: Map<string,boolean>;
 
     constructor(id: string) {
         this.type = [];
@@ -11,7 +11,7 @@ export default class node {
         this.id = id;
         this.sensorName = new Set();
         this.entityName = new Set();
-        this.walkable = false;
+        this.walkable = new Map();
     }
     hasWall():boolean{
         return this.type.includes("wall");
@@ -24,11 +24,11 @@ export default class node {
     }
     setSensor(sensorName: string, walkable: boolean) {
         this.sensorName.add(sensorName);
-        this.walkable = walkable;
+        this.walkable.set(sensorName,walkable);
     }
     setEntity(entityName: string, walkable: boolean) {
         this.entityName.add(entityName);
-        this.walkable = walkable;
+        this.walkable.set(entityName,walkable);
     }
     removeWall() {
         this.type = this.type.filter(value => value !== "wall");
@@ -38,7 +38,7 @@ export default class node {
         this.type.push("empty");
         this.sensorName.clear();
         this.entityName.clear();
-        this.walkable = false;
+        this.walkable =new Map();
     }
     getTypeofNode(filterText: string): string {
         if (filterText != "") {
@@ -71,11 +71,28 @@ export default class node {
             if (this.type.includes("agent")) {
                 return "agent"; //assuming that a node will contain an agent only if it can be added
             }
-            if (this.type.includes("sensorPhysical") && !this.walkable) {
-                return "sensorPhysical"; // so only show sensors physical area if it is not walkable
+            if (this.type.includes("sensorPhysical")) {
+                //check if any sensor is walkable
+                let printstr = "";
+                this.sensorName.forEach((name)=>{
+                    if(!this.walkable.get(name)){
+                        printstr =  "sensorPhysical";
+                    }
+                })
+                if(printstr=="sensorPhysical"){
+                    return "sensorPhysical";
+                } // so only show sensors physical area if it is not walkable
             }
-            if (this.type.includes("entityPhysical") && !this.walkable) {
-                return "entityPhysical"; // so only show entities physical area if it is not walkable
+            if (this.type.includes("entityPhysical")) {
+                let printstr = "";
+                this.entityName.forEach((name)=>{
+                    if(!this.walkable.get(name)){
+                        printstr =  "entityPhysical";
+                    }
+                })
+                if(printstr=="entityPhysical"){
+                    return "entityPhysical";
+                }  // so only show entities physical area if it is not walkable
             }
             if (this.type.includes("wall")) {
                 return "wall";

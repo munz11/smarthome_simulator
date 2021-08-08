@@ -40,6 +40,13 @@
         @closeForm="closeFormEntity"
       />
     </v-overlay>
+        <v-overlay :value="agentForm" :light="true" :dark="false">
+      <AddAgent
+        :physicalArea="physicalArea"
+        @closeAgentForm="completeAddAgent"
+        @closeForm="closeFormAgent"
+      />
+    </v-overlay>
     <v-overlay :value="dbPhysical" :light="true" :dark="false">
       <DbOnPhysical
         @closeCard="dbPhysical = false"
@@ -63,13 +70,14 @@ import node from "@/models/node";
 import position from "@/models/position";
 import AddSensor from "@/components/widgets/addSensor.vue";
 import AddEntity from "@/components/widgets/addEntity.vue";
+import AddAgent from "@/components/widgets/addAgent.vue";
 import DbOnPhysical from "@/components/widgets/dbOnPhysical.vue";
 import DbOnBoth from "@/components/widgets/dbOnBoth.vue";
 
 export default {
   name: "Grid",
   props: ["editGrid"],
-  components: { AddSensor, AddEntity, DbOnPhysical, DbOnBoth },
+  components: { AddSensor, AddEntity, DbOnPhysical, DbOnBoth, AddAgent },
   data() {
     return {
       x: window.innerWidth * 0.83,
@@ -88,6 +96,7 @@ export default {
       interactArea: new Set(),
       sensorForm: false,
       entityForm: false,
+      agentForm: false,
       clickCount: 0,
       clickTimer: null,
       delay: 250,
@@ -177,7 +186,9 @@ export default {
           this.continueAddEntity(); //should have atleast one interact node or a physical node
         }
       }
-
+      if (this.action == "agent" && this.physicalArea.size > 0){
+        this.continueAddAgent(); //should have a physical area
+      }
       this.action = "wall";
       this.snackBar = false;
       this.text = "";
@@ -206,6 +217,22 @@ export default {
           this.updateClassTemp(ID, "entityPhysical");
         }
       }
+      if (
+        this.action == "agent" &&
+        this.displayedNodes.get(ID).canAddAgentHere()
+      ) {
+        if(this.physicalArea.size>0){
+          this.physicalArea.forEach((previd)=>{
+            this.updateClass(previd);
+          })
+          this.physicalArea.clear();
+          this.physicalArea.add(ID);
+          this.updateClassTemp(ID, "agent");
+        }else{
+          this.physicalArea.add(ID);
+          this.updateClassTemp(ID, "agent"); 
+        }
+      }      
     },
     dbClick(ID) {
       if (this.action == "wall" && this.displayedNodes.get(ID).hasWall()) {
@@ -349,6 +376,8 @@ export default {
       }
     },
     addSensor() {
+      this.physicalArea.clear();
+      this.interactArea.clear();
       //check if any type of sensor is available:
       let numTypes =
         this.$store.state.passiveSensors.length +
@@ -414,6 +443,8 @@ export default {
       }
     },
     addEntity() {
+      this.physicalArea.clear();
+      this.interactArea.clear();      
       this.action = "entity";
       this.text =
         "Add physical area by single click and interact area by double click, then continue to finish adding the entity.";
@@ -466,6 +497,42 @@ export default {
           .setEntity(entity.name, entity.walkable);
       }
     },
+    addAgent(){
+      this.physicalArea.clear();
+      this.interactArea.clear();
+      this.action = "agent";
+      this.text =
+        "Add start position of agent by single click, then continue to finish adding the agent.";
+      this.btnText = "Continue";
+      this.snackBar = true;
+    },
+    continueAddAgent(){
+      this.agentForm = true;
+      this.physicalArea.forEach((ID) => {
+        this.updateClass(ID);
+      });
+    },
+    completeAddAgent(){
+      this.agentForm = false;
+      let agentAdded = this.$store.getters.lastAgentAdded;
+      this.showAgentOnNode(agentAdded);
+      this.physicalArea.forEach((ID) => {
+        this.updateClass(ID);
+      });
+      this.physicalArea.clear();
+    },
+    closeFormAgent(){
+      this.agentForm = false;
+      this.physicalArea.clear();
+    },
+    showAgentOnNode(agentAdded){
+      this.displayedNodes
+          .get(this.getID(agentAdded.initialPosition))
+          .setType("agent");
+      this.displayedNodes
+          .get(this.getID(agentAdded.initialPosition))
+          .setAgentName(agentAdded.id);
+    },
     getID(position) {
       return position.x.toString() + "-" + position.y.toString();
     },
@@ -486,6 +553,10 @@ export default {
       for (let i = 0; i < entities.length; i++) {
         this.showEntityOnNode(entities[i]);
       }
+      let agents = this.$store.state.agents;
+      for (let i = 0; i < agents.length; i++) {
+        this.showAgentOnNode(agents[i]);
+      }      
     },
     setAllNodesToEmpty() {
       //reset all the nodes which contained something
@@ -524,6 +595,13 @@ export default {
             .reset();
           this.updateClass(this.getID(entities[i].interactArea[j]));
         }
+      }
+      let agents = this.$store.state.agents;
+      for (let i = 0; i < agents.length; i++) {
+          this.displayedNodes
+            .get(this.getID(agents[i].initialPosition))
+            .reset();
+          this.updateClass(this.getID(agents[i].initialPosition));        
       }
     },
     clear() {
@@ -637,6 +715,9 @@ export default {
     });
     this.$root.$on("gridAddEntity", () => {
       this.addEntity();
+    });
+    this.$root.$on("gridAddAgent", () => {
+      this.addAgent();
     });
   },
   watch: {

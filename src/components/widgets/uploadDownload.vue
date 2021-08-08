@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card class="mx-auto" max-width="500" outlined elevation="2" shaped >
+    <v-card class="mx-auto" max-width="500" outlined elevation="2" shaped>
       <v-card-title
         >Upload or Download the FloorPlan
         <br />
@@ -30,6 +30,7 @@ import floorPlanDetails from "@/models/floorPlanDetails";
 import position from "@/models/position";
 import sensor from "@/models/sensor";
 import entity from "@/models/entity";
+import agent from "@/models/agent";
 export default {
   name: "UploadDownload",
   data() {
@@ -117,6 +118,13 @@ export default {
         let wall = this.jsonData.walls[i];
         this.$store.commit("addWall", new position(wall.x, wall.y));
       }
+      for (let i = 0; i < this.jsonData.agents.length; i++) {
+        let newAgent = this.jsonData.agents[i];
+        this.$store.commit(
+          "addAgent",
+          new agent(newAgent.id, newAgent.initialPosition, newAgent.speed)
+        );
+      }
     },
     download() {
       this.getPassiveActiveSensors();
@@ -124,6 +132,7 @@ export default {
         tileSideLength: this.$store.state.floorPlanDetails.tileSideLenght,
         width: this.$store.state.floorPlanDetails.width,
         height: this.$store.state.floorPlanDetails.height,
+        agents: this.$store.state.agents,
         passiveSensors: this.passiveSensors,
         activeSensors: this.activeSensors,
         walls: this.$store.state.walls,
@@ -163,7 +172,11 @@ export default {
             type: "number",
             minimum: 1,
           },
-          
+          agents: {
+            type: "array",
+            required: true,
+            items: { $ref: "#/$defs/agent" },
+          },
           passiveSensors: {
             type: "array",
             required: true,
@@ -284,28 +297,58 @@ export default {
               },
             },
           },
+          agent: {
+            type: "object",
+            required: ["id", "initialPosition", "speed"],
+            properties: {
+              id: {
+                type: "string",
+              },
+              initialPostion: {
+                type: "object",
+                properties: {
+                  x: {
+                    required: true,
+                    type: "number",
+                    minimum: 0,
+                  },
+                  y: {
+                    required: true,
+                    type: "number",
+                    minimum: 0,
+                  },
+                },
+              },
+              speed: {
+                type: "number",
+                minimum: "0",
+              },
+            },
+          },
         },
       });
 
       try {
         this.jsonData = JSON.parse(this.data);
-        
+
         let isValid = validate(this.jsonData);
+        
         if (!isValid) {
-          this.messageFromUpload = "Errors in the json format, could not be validated.";
+          this.messageFromUpload =
+            "Errors in the json format, could not be validated.";
         } else {
           if (this.checkErrors()) {
             this.updateStore();
-            this.messageFromUpload =
-              "Success.";
+            this.messageFromUpload = "Success.";
             this.$router.go();
-          } 
+          }
         }
       } catch (err) {
         this.messageFromUpload = err;
       }
     },
     checkErrors() {
+      
       let width = 0;
       if (this.jsonData.width < 1 || this.jsonData.width > 100) {
         this.messageFromUpload = "The width is not within the range 1-100.";
@@ -320,9 +363,10 @@ export default {
       } else {
         height = this.jsonData.height;
       }
-
+      
       const sensorName = [];
       const entityName = [];
+      const agentName = [];
       for (let i = 0; i < this.jsonData.passiveSensors.length; i++) {
         let newSensor = this.jsonData.passiveSensors[i];
         if (sensorName.includes(newSensor.name)) {
@@ -335,17 +379,19 @@ export default {
             newSensor.physicalArea[j].x >= width ||
             newSensor.physicalArea[j].y >= height
           ) {
-            this.messageFromUpload = "A sensor area is not positioned correctly";
+            this.messageFromUpload =
+              "A sensor area is not positioned correctly";
             return false;
           }
         }
 
-        for (let j = 0; j <newSensor.interactArea.length; j++) {
+        for (let j = 0; j < newSensor.interactArea.length; j++) {
           if (
             newSensor.interactArea[j].x >= width ||
             newSensor.interactArea[j].y >= height
           ) {
-            this.messageFromUpload = "A sensor area is not positioned correctly";
+            this.messageFromUpload =
+              "A sensor area is not positioned correctly";
             return false;
           }
         }
@@ -357,12 +403,13 @@ export default {
           return false;
         }
         sensorName.push(newSensor.name);
-        for (let j = 0; j <newSensor.physicalArea.length; j++) {
+        for (let j = 0; j < newSensor.physicalArea.length; j++) {
           if (
             newSensor.physicalArea[j].x >= width ||
             newSensor.physicalArea[j].y >= height
           ) {
-            this.messageFromUpload = "A sensor area is not positioned correctly";
+            this.messageFromUpload =
+              "A sensor area is not positioned correctly";
             return false;
           }
         }
@@ -371,12 +418,13 @@ export default {
             newSensor.interactArea[j].x >= width ||
             newSensor.interactArea[j].y >= height
           ) {
-            this.messageFromUpload = "A sensor area is not positioned correctly";
+            this.messageFromUpload =
+              "A sensor area is not positioned correctly";
             return false;
           }
         }
       }
-      
+
       for (let i = 0; i < this.jsonData.entities.length; i++) {
         let newEntity = this.jsonData.entities[i];
         if (entityName.includes(newEntity.name)) {
@@ -389,7 +437,8 @@ export default {
             newEntity.physicalArea[j].x >= width ||
             newEntity.physicalArea[j].y >= height
           ) {
-            this.messageFromUpload = "An entity area is not positioned correctly";
+            this.messageFromUpload =
+              "An entity area is not positioned correctly";
             return false;
           }
         }
@@ -398,19 +447,35 @@ export default {
             newEntity.interactArea[j].x >= width ||
             newEntity.interactArea[j].y >= height
           ) {
-            this.messageFromUpload = "An entity area is not positioned correctly";
+            this.messageFromUpload =
+              "An entity area is not positioned correctly";
             return false;
           }
         }
       }
-      for(let i=0;i<this.jsonData.walls.length;i++){
+      for (let i = 0; i < this.jsonData.walls.length; i++) {
         if (
-            this.jsonData.walls[i].x >= width ||
-            this.jsonData.walls[i].y >= height
-          ) {
-            this.messageFromUpload = "A wall is not positioned correctly";
-            return false;
-          }
+          this.jsonData.walls[i].x >= width ||
+          this.jsonData.walls[i].y >= height
+        ) {
+          this.messageFromUpload = "A wall is not positioned correctly";
+          return false;
+        }
+      }
+      for (let i = 0; i < this.jsonData.agents.length; i++) {
+        let newAgent = this.jsonData.agents[i];
+        if (agentName.includes(newAgent.id)) {
+          this.messageFromUpload = "One of the agent name is not unique";
+          return false;
+        }
+        agentName.push(newAgent.id);
+        if (
+          newAgent.initialPosition.x >= width ||
+          newAgent.initialPosition.y >= height
+        ) {
+          this.messageFromUpload = "An agent is not positioned correctly";
+          return false;
+        }
       }
       return true;
     },

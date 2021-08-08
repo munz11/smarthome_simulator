@@ -1,6 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import sensor from "../models/sensor";
+import agent from "../models/agent";
 import position from "../models/position";
 import floorPlanDetails from "../models/floorPlanDetails";
 import entity from "../models/entity";
@@ -10,6 +11,7 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
+    agents: JSON.parse(""+sessionStorage.getItem("agents")) ||Array<agent>(),
     sensors: Array<sensor>(),
     entities: JSON.parse(""+sessionStorage.getItem("entities")) || Array<entity>(),
     walls: JSON.parse(""+sessionStorage.getItem("walls")) || Array<position>(),
@@ -44,6 +46,10 @@ export default new Vuex.Store({
     addEntity(state, newEntity: entity) {
       state.entities.push(newEntity);
       sessionStorage.setItem("entities", JSON.stringify(state.entities));
+    },
+    addAgent(state, newAgent: agent) {
+      state.agents.push(newAgent);
+      sessionStorage.setItem("agents", JSON.stringify(state.agents));
     },
     addWall(state, newWall: position) {
       let foundWall = false;
@@ -86,10 +92,12 @@ export default new Vuex.Store({
     clearAllInfoOnGrid(state) {
       state.sensors = Array<sensor>();
       state.entities = Array<entity>();
+      state.agents = Array<agent>();
       state.walls = Array<position>();
       sessionStorage.setItem("sensors", JSON.stringify(state.sensors));
       sessionStorage.setItem("entities", JSON.stringify(state.entities));
       sessionStorage.setItem("walls", JSON.stringify(state.walls));
+      sessionStorage.setItem("agents", JSON.stringify(state.agents));
     },
   },
   getters: {
@@ -98,6 +106,9 @@ export default new Vuex.Store({
     },
     lastEntityAdded: state => {
       return state.entities[state.entities.length - 1];
+    },
+    lastAgentAdded: state => {
+      return state.agents[state.agents.length - 1];
     },
     listSensors: state =>{
       if(state.sensors.length==0 && sessionStorage.getItem("sensors")!==null){
@@ -121,6 +132,13 @@ export default new Vuex.Store({
         entityName.push(entity.name);
       })
       return entityName;     
+    },
+    agentNames: state =>{
+      const agentName:string[] = [];
+      state.agents.forEach((agent:agent) =>{
+        agentName.push(agent.id);
+      })
+      return agentName;     
     }
   }
 });

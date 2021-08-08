@@ -46,10 +46,7 @@ export default {
         tileSideLength: this.$store.state.floorPlanDetails.tileSideLenght,
         width: this.$store.state.floorPlanDetails.width,
         height: this.$store.state.floorPlanDetails.height,
-        agent: {
-          position: this.$store.state.agent,
-          speed: parseInt(this.$store.state.agentSpeed),
-        },
+        agents: this.$store.state.agents,
         passiveSensors: this.passiveSensors,
         activeSensors: this.activeSensors,
         walls: this.$store.state.walls,

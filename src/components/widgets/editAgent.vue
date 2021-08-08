@@ -1,7 +1,8 @@
 <template>
   <div>
     <v-card class="mx-auto" max-width="600" outlined elevation="2" shaped>
-      <v-card-title>Edit Entity
+      <v-card-title
+        >Edit Agent
         <v-btn text @click="close"> &times; </v-btn>
       </v-card-title>
       <v-card-text>
@@ -12,7 +13,12 @@
             required
             disabled
           ></v-text-field>
-          <v-checkbox v-model="walkable" label="walkable"></v-checkbox>
+          <v-text-field
+            label="Speed"
+            v-model="speed"
+            required
+            :rules="speedRules"
+          ></v-text-field>
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -26,30 +32,37 @@
 
 <script>
 export default {
-  name: "EditEntity",
-  props: ["entity"],
+  name: "EditAgent",
+  props: ["agent"],
   data() {
     return {
       name: "",
-      walkable: "",
+      speed: "",
       isValid: true,
+      speedRules: [
+        (v) => !!v || "Required",
+        (v) =>
+          /^(\d+(\.\d{0,2})?|\.?\d{1,2})$/.test(v) ||
+          "Enter a number with max 2 decimal places",
+        (v) => v != 0 || "Enter a positive number",
+      ],
     };
   },
   methods: {
     save() {
-      this.entity.name=this.name;
-      this.entity.walkable=this.walkable;  
-      this.$store.commit("editEntity", this.entity);
+      this.agent.id = this.name;
+      this.agent.speed = this.speed;
+      this.$store.commit("editAgent", this.agent);
       this.$emit("closeForm");
     },
-    close(){
+    close() {
       this.$emit("closeForm");
     },
   },
   beforeMount() {
-      this.name=this.entity.name;
-      this.walkable=this.entity.walkable;
-  }
+    this.name = this.agent.id;
+    this.speed = this.agent.speed;
+  },
 };
 </script>
 

@@ -5,6 +5,7 @@ import FloorPlan from "../components/views/FloorPlan.vue";
 import Simulation from "../components/views/Simulation.vue";
 import Sensors from "../components/views/Sensors.vue";
 import Entities from "../components/views/Entities.vue";
+import Agents from "../components/views/Agents.vue";
 
 Vue.use(VueRouter);
 
@@ -29,6 +30,11 @@ const routes: Array<RouteConfig> = [
     name: "Entities",
     component: Entities,
   },
+  {
+    path: "/Agents",
+    name: "Agents",
+    component: Agents,
+  }, 
   {
     path: "/Simulation",
     name: "Simulation",

@@ -75,6 +75,10 @@ export default new Vuex.Store({
       state.entities = state.entities.filter((e:entity)=>!(e.name==entity.name));
       sessionStorage.setItem("entities", JSON.stringify(state.entities));
     },
+    removeAgent(state,agent:agent){
+      state.agents = state.agents.filter((e:agent)=>!(e.id==agent.id));
+      sessionStorage.setItem("agents", JSON.stringify(state.agents));
+    },    
     editEntity(state,entity:entity){
       state.entities = state.entities.filter((e:entity)=>!(e.name==entity.name));
       state.entities.push(entity);
@@ -84,6 +88,11 @@ export default new Vuex.Store({
       state.sensors = state.sensors.filter((e:sensor)=>!(e.name==sensor.name));
       state.sensors.push(sensor);
       sessionStorage.setItem("sensors", JSON.stringify(state.sensors));
+    },
+    editAgent(state,agent:agent){
+      state.agents = state.agents.filter((e:agent)=>!(e.id==agent.id));
+      state.agents.push(agent);
+      sessionStorage.setItem("agents", JSON.stringify(state.agents));
     },
     updateFloorPlanDetails(state, newFloorPlan: floorPlanDetails) {
       state.floorPlanDetails = newFloorPlan;

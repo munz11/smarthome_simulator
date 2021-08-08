@@ -185,12 +185,6 @@ export default {
     },
     click(ID) {
       if (
-        this.action == "agent" &&
-        this.displayedNodes.get(ID).canMoveAgentHere()
-      ) {
-        this.updateAgentNodes(ID);
-      }
-      if (
         this.action == "sensor" &&
         this.displayedNodes.get(ID).canAddSensorPhysical()
       ) {
@@ -212,15 +206,6 @@ export default {
           this.updateClassTemp(ID, "entityPhysical");
         }
       }
-    },
-    updateAgentNodes(ID) {
-      this.displayedNodes
-        .get(this.getID(this.$store.state.agent))
-        .removeAgent(); // remove the agent from this node
-      this.updateClass(this.getID(this.$store.state.agent)); //update the node class
-      this.displayedNodes.get(ID).setType("agent"); //update the new agent node
-      this.updateClass(ID); //update the class of new agent node
-      this.$store.commit("updateAgent", this.getPosition(ID)); //update store
     },
     dbClick(ID) {
       if (this.action == "wall" && this.displayedNodes.get(ID).hasWall()) {
@@ -488,10 +473,7 @@ export default {
       this.$root.$emit("tooltip",this.displayedNodes.get(ID).displayNodeInfo());
     },
     updateNodesToStore() {
-      //assumes that the store contains the allowed node types, so no need to check if the agent or a wall can be added here
-      this.displayedNodes
-        .get(this.getID(this.$store.state.agent))
-        .setType("agent");
+      //assumes that the store contains the allowed node types
       let walls = this.$store.state.walls;
       for (let i = 0; i < walls.length; i++) {
         this.displayedNodes.get(this.getID(walls[i])).setType("wall");
@@ -506,9 +488,8 @@ export default {
       }
     },
     setAllNodesToEmpty() {
-      //reset all the nodes which contained something - removes agent and wall atm
-      this.displayedNodes.get(this.getID(this.$store.state.agent)).reset();
-      this.updateClass(this.getID(this.$store.state.agent));
+      //reset all the nodes which contained something
+     
       let walls = this.$store.state.walls;
       for (let i = 0; i < walls.length; i++) {
         this.displayedNodes.get(this.getID(walls[i])).reset();
@@ -548,17 +529,9 @@ export default {
     clear() {
       this.setAllNodesToEmpty();
       this.$store.commit("clearAllInfoOnGrid");
-      this.displayedNodes
-        .get(this.getID(this.$store.state.agent))
-        .setType("agent"); //reset agent position according to store
-      this.updateClass(this.getID(this.$store.state.agent));
+      
     },
-    moveAgent() {
-      this.action = "agent";
-      this.text = "Move the agent by clicking on a new tile.";
-      this.btnText = "Done";
-      this.snackBar = true;
-    },
+    
     panRight(){
       let val = this.currentCols.length;
       if (this.maxCol - this.currentCols.length > 0 && this.currentCols[val-1]!==(this.maxCol - 1)) {
@@ -646,9 +619,7 @@ export default {
     this.$root.$on("gridClear", () => {
       this.clear();
     });
-    this.$root.$on("gridMoveAgent", () => {
-      this.moveAgent();
-    });
+    
     this.$root.$on("gridPanLeft", () => {
       this.panLeft();
     });

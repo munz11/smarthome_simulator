@@ -64,23 +64,12 @@ export default {
     updateStore() {
       this.$store.commit("clearAllInfoOnGrid");
       this.$store.commit(
-        "updateAgent",
-        new position(
-          this.jsonData.agent.position.x,
-          this.jsonData.agent.position.y
-        )
-      );
-      this.$store.commit(
         "updateFloorPlanDetails",
         new floorPlanDetails(
           this.jsonData.width,
           this.jsonData.height,
           this.jsonData.tileSideLength
         )
-      );
-      this.$store.commit(
-        "updateAgentSpeed",
-        this.jsonData.agent.speed.toString()
       );
       for (let i = 0; i < this.jsonData.passiveSensors.length; i++) {
         let newSensor = this.jsonData.passiveSensors[i];
@@ -135,10 +124,6 @@ export default {
         tileSideLength: this.$store.state.floorPlanDetails.tileSideLenght,
         width: this.$store.state.floorPlanDetails.width,
         height: this.$store.state.floorPlanDetails.height,
-        agent: {
-          position: this.$store.state.agent,
-          speed: parseInt(this.$store.state.agentSpeed),
-        },
         passiveSensors: this.passiveSensors,
         activeSensors: this.activeSensors,
         walls: this.$store.state.walls,
@@ -178,32 +163,7 @@ export default {
             type: "number",
             minimum: 1,
           },
-          agent: {
-            required: true,
-            type: "object",
-            properties: {
-              position: {
-                required: true,
-                type: "object",
-                properties: {
-                  x: {
-                    required: true,
-                    type: "number",
-                    minimum: 0,
-                  },
-                  y: {
-                    required: true,
-                    type: "number",
-                    minimum: 0,
-                  },
-                },
-              },
-              speed: {
-                required: true,
-                type: "number",
-              },
-            },
-          },
+          
           passiveSensors: {
             type: "array",
             required: true,
@@ -360,13 +320,7 @@ export default {
       } else {
         height = this.jsonData.height;
       }
-      if (
-        this.jsonData.agent.position.x >= width ||
-        this.jsonData.agent.position.y >= height
-      ) {
-        this.messageFromUpload = "The agent is not positioned correctly";
-        return false;
-      }
+
       const sensorName = [];
       const entityName = [];
       for (let i = 0; i < this.jsonData.passiveSensors.length; i++) {

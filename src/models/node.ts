@@ -4,6 +4,7 @@ export default class node {
     sensorName: Set<string>; // a node can contain multiple sensors 
     entityName: Set<string>; // a node can contain multiple entity names
     walkable: Map<string,boolean>;
+    agentName: string; //as only one agent per node if allowed
 
     constructor(id: string) {
         this.type = [];
@@ -12,6 +13,7 @@ export default class node {
         this.sensorName = new Set();
         this.entityName = new Set();
         this.walkable = new Map();
+        this.agentName = "";
     }
     hasWall():boolean{
         return this.type.includes("wall");
@@ -29,6 +31,9 @@ export default class node {
     setEntity(entityName: string, walkable: boolean) {
         this.entityName.add(entityName);
         this.walkable.set(entityName,walkable);
+    }
+    setAgentName(agentName:string){
+        this.agentName = agentName;
     }
     removeWall() {
         this.type = this.type.filter(value => value !== "wall");
@@ -105,17 +110,24 @@ export default class node {
     }
     displayNodeInfo(): string {
         //x-y,sensornames,entitynames
+        let display:string = this.id;
+        if(this.agentName!=""){
+            display = display + ","+ this.agentName;
+        }
         if (this.sensorName.size == 0) {
             if (this.entityName.size !== 0) {
-                return this.id + ", " + this.setToString(this.entityName);
+                return display + ", " + this.setToString(this.entityName);
             }
-            return this.id;
+            return display;
         } else if (this.entityName.size == 0) {
-            return this.id + ", " + this.setToString(this.sensorName);
+            return display + ", " + this.setToString(this.sensorName);
         }
-        return this.id + ", " + this.setToString(this.sensorName) + ", "+ this.setToString(this.entityName);
+        return display + ", " + this.setToString(this.sensorName) + ", "+ this.setToString(this.entityName);
     }
-    canMoveAgentHere(): boolean {
+    canAddAgentHere(): boolean {
+        if(this.type.includes("agent")){
+            return false;
+        }
         if (this.type.includes("wall")) {
             return false; //agent can not move to a wall node
         }

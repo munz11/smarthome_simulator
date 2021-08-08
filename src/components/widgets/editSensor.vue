@@ -11,7 +11,7 @@
             label="Name"
             v-model="name"
             required
-            :rules="nameRules"
+            disabled
           ></v-text-field>
           <label>Type: </label>
           <select
@@ -59,7 +59,6 @@ export default {
       typeOptions: [],
       type: "",
       isValid: true,
-      nameRules: [(v) => !!v || "Required",(v)=> !this.$store.getters.sensorNames.includes(v)||"Enter a unique name"],
       typeRules: [(v) => !!v || "Required"],
       triggerFrequencyRules: [
         (v) =>

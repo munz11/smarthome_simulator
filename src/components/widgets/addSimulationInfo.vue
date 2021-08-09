@@ -167,7 +167,7 @@ export default {
         rootTopic: this.rootTopic,
         seed: this.seed,
       };
-      this.socket = new SockJS("https://smart-home-simulator-backend.herokuapp.com/websockets");
+      this.socket = new SockJS("http://localhost:8080/websockets");
       this.stompClient = Stomp.over(this.socket);
       this.stompClient.connect(
         {},

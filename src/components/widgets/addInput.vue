@@ -52,14 +52,13 @@ export default {
         walls: this.$store.state.walls,
         entities: this.$store.state.entities,
       };
-      let activities = {
-        input: this.$store.state.activities,
-      };
       axios
         .post(this.$smartHomeBackend.getUrlRoomConfig(), floorPlan)
         .then(() => {
           axios
-            .post(this.$smartHomeBackend.getUrlInput(), activities)
+            .post(this.$smartHomeBackend.getUrlInput(), this.$store.state.activities, {
+              headers: { "content-type": "application/json" },
+            })
             .then((resInput) => {
               if (resInput.data == "consumed") {
                 this.$root.$emit("simulationInfoAdd");

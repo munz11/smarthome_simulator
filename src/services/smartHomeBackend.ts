@@ -1,7 +1,7 @@
 export default class smartHomeBackend {
   url: { protocol: string; hostname: string };
   constructor() {
-    this.url = { protocol: "https", hostname: "http://localhost:8080.com" };
+    this.url = { protocol: "http", hostname: "localhost:8080" };
   }
 
   getUrl(): string {

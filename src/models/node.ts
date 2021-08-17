@@ -23,6 +23,7 @@ export default class node {
     }
     removeAgent() {
         this.type = this.type.filter(value => value !== "agent");
+        this.agentName = "";
     }
     setSensor(sensorName: string, walkable: boolean) {
         this.sensorName.add(sensorName);
@@ -33,7 +34,7 @@ export default class node {
         this.walkable.set(entityName,walkable);
     }
     setAgentName(agentName:string){
-        this.agentName = agentName;
+        this.agentName = this.agentName + agentName;
     }
     removeWall() {
         this.type = this.type.filter(value => value !== "wall");

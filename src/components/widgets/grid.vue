@@ -40,7 +40,7 @@
         @closeForm="closeFormEntity"
       />
     </v-overlay>
-        <v-overlay :value="agentForm" :light="true" :dark="false">
+    <v-overlay :value="agentForm" :light="true" :dark="false">
       <AddAgent
         :physicalArea="physicalArea"
         @closeAgentForm="completeAddAgent"
@@ -104,6 +104,8 @@ export default {
       dbPhysical: false,
       saveNode: null,
       dbBoth: false,
+      agentsPositions: new Map(),
+      visual: false,
     };
   },
   methods: {
@@ -186,7 +188,7 @@ export default {
           this.continueAddEntity(); //should have atleast one interact node or a physical node
         }
       }
-      if (this.action == "agent" && this.physicalArea.size > 0){
+      if (this.action == "agent" && this.physicalArea.size > 0) {
         this.continueAddAgent(); //should have a physical area
       }
       this.action = "wall";
@@ -221,18 +223,18 @@ export default {
         this.action == "agent" &&
         this.displayedNodes.get(ID).canAddAgentHere()
       ) {
-        if(this.physicalArea.size>0){
-          this.physicalArea.forEach((previd)=>{
+        if (this.physicalArea.size > 0) {
+          this.physicalArea.forEach((previd) => {
             this.updateClass(previd);
-          })
+          });
           this.physicalArea.clear();
           this.physicalArea.add(ID);
           this.updateClassTemp(ID, "agent");
-        }else{
+        } else {
           this.physicalArea.add(ID);
-          this.updateClassTemp(ID, "agent"); 
+          this.updateClassTemp(ID, "agent");
         }
-      }      
+      }
     },
     dbClick(ID) {
       if (this.action == "wall" && this.displayedNodes.get(ID).hasWall()) {
@@ -352,7 +354,7 @@ export default {
         this.updateClass(ID);
       }
     },
-    mouseover(ID){
+    mouseover(ID) {
       this.show(ID);
       this.continueWall(ID);
     },
@@ -444,7 +446,7 @@ export default {
     },
     addEntity() {
       this.physicalArea.clear();
-      this.interactArea.clear();      
+      this.interactArea.clear();
       this.action = "entity";
       this.text =
         "Add physical area by single click and interact area by double click, then continue to finish adding the entity.";
@@ -497,7 +499,7 @@ export default {
           .setEntity(entity.name, entity.walkable);
       }
     },
-    addAgent(){
+    addAgent() {
       this.physicalArea.clear();
       this.interactArea.clear();
       this.action = "agent";
@@ -506,13 +508,13 @@ export default {
       this.btnText = "Continue";
       this.snackBar = true;
     },
-    continueAddAgent(){
+    continueAddAgent() {
       this.agentForm = true;
       this.physicalArea.forEach((ID) => {
         this.updateClass(ID);
       });
     },
-    completeAddAgent(){
+    completeAddAgent() {
       this.agentForm = false;
       let agentAdded = this.$store.getters.lastAgentAdded;
       this.showAgentOnNode(agentAdded);
@@ -521,23 +523,26 @@ export default {
       });
       this.physicalArea.clear();
     },
-    closeFormAgent(){
+    closeFormAgent() {
       this.agentForm = false;
       this.physicalArea.clear();
     },
-    showAgentOnNode(agentAdded){
+    showAgentOnNode(agentAdded) {
       this.displayedNodes
-          .get(this.getID(agentAdded.initialPosition))
-          .setType("agent");
+        .get(this.getID(agentAdded.initialPosition))
+        .setType("agent");
       this.displayedNodes
-          .get(this.getID(agentAdded.initialPosition))
-          .setAgentName(agentAdded.id);
+        .get(this.getID(agentAdded.initialPosition))
+        .setAgentName(agentAdded.id);
     },
     getID(position) {
       return position.x.toString() + "-" + position.y.toString();
     },
     show(ID) {
-      this.$root.$emit("tooltip",this.displayedNodes.get(ID).displayNodeInfo());
+      this.$root.$emit(
+        "tooltip",
+        this.displayedNodes.get(ID).displayNodeInfo()
+      );
     },
     updateNodesToStore() {
       //assumes that the store contains the allowed node types
@@ -556,11 +561,11 @@ export default {
       let agents = this.$store.state.agents;
       for (let i = 0; i < agents.length; i++) {
         this.showAgentOnNode(agents[i]);
-      }      
+      }
     },
     setAllNodesToEmpty() {
       //reset all the nodes which contained something
-     
+
       let walls = this.$store.state.walls;
       for (let i = 0; i < walls.length; i++) {
         this.displayedNodes.get(this.getID(walls[i])).reset();
@@ -598,21 +603,21 @@ export default {
       }
       let agents = this.$store.state.agents;
       for (let i = 0; i < agents.length; i++) {
-          this.displayedNodes
-            .get(this.getID(agents[i].initialPosition))
-            .reset();
-          this.updateClass(this.getID(agents[i].initialPosition));        
+        this.displayedNodes.get(this.getID(agents[i].initialPosition)).reset();
+        this.updateClass(this.getID(agents[i].initialPosition));
       }
     },
     clear() {
       this.setAllNodesToEmpty();
       this.$store.commit("clearAllInfoOnGrid");
-      
     },
-    
-    panRight(){
+
+    panRight() {
       let val = this.currentCols.length;
-      if (this.maxCol - this.currentCols.length > 0 && this.currentCols[val-1]!==(this.maxCol - 1)) {
+      if (
+        this.maxCol - this.currentCols.length > 0 &&
+        this.currentCols[val - 1] !== this.maxCol - 1
+      ) {
         let el = this.currentCols[val - 1] + 1;
         this.currentCols.shift();
         this.currentCols.push(el);
@@ -622,7 +627,7 @@ export default {
         this.snackBar = true;
       }
     },
-     panLeft() {
+    panLeft() {
       if (
         this.maxCol - this.currentCols.length > 0 &&
         this.currentCols[0] !== 0
@@ -682,6 +687,26 @@ export default {
         }
       }
     },
+    visualAgentOnNewNode(newPosition,agentName) {
+      this.displayedNodes
+        .get(this.getID(newPosition))
+        .setType("agent");
+      this.displayedNodes
+        .get(this.getID(newPosition))
+        .setAgentName(agentName);
+      this.updateClass(this.getID(newPosition));
+    },
+    visualRemoveAgent(position){
+      this.displayedNodes.get(this.getID(position)).removeAgent();
+      this.updateClass(this.getID(position));
+    },
+    visualMoveAgent(agentName, newX, newY) {
+      let oldPosition = this.agentsPositions.get(agentName);
+      this.visualRemoveAgent(oldPosition);
+      let newPosition = new position(newX,newY);
+      this.visualAgentOnNewNode(newPosition,agentName);
+      this.agentsPositions.set(agentName,newPosition);
+    },
   },
   beforeMount() {
     for (let i = 0; i < this.maxRow; i++) {
@@ -694,10 +719,18 @@ export default {
   mounted() {
     this.calculateNodesDisplayed();
     this.updateNodesToStore();
+    this.$root.$on("visualMoveAgent", (agentName, x, y) => {
+      if(this.visual){
+      this.visualMoveAgent(agentName, x, y);  
+      }
+    });
+    this.$root.$on("visualDisplay",() =>{
+      this.agentsPositions = this.$store.getters.agentPositions;
+      this.visual=true;
+    });
     this.$root.$on("gridClear", () => {
       this.clear();
     });
-    
     this.$root.$on("gridPanLeft", () => {
       this.panLeft();
     });
@@ -723,7 +756,7 @@ export default {
   watch: {
     filterText: function () {
       this.updateSensorEntityNodes();
-    },
+    }
   },
 };
 </script>

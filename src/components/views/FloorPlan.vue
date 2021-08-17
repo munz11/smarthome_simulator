@@ -3,7 +3,7 @@
     <v-container fluid fill-height>
       <v-row>
         <FloorPlanMenu />
-        <Grid :editGrid="true" />
+        <Grid :editGrid="true"/>
       </v-row>
     </v-container>
     <v-snackbar v-model="snackBar" timeout="-1" bottom>

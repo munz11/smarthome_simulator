@@ -39,7 +39,7 @@ const routes: Array<RouteConfig> = [
     path: "/Simulation",
     name: "Simulation",
     component: Simulation,
-  }
+  },
 ];
 
 const router = new VueRouter({

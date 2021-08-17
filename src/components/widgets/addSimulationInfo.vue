@@ -137,7 +137,7 @@ export default {
       rootTopic: "smartHome",
       isValid: true,
       seed: "",
-      simulationInfo: "",
+      simulationInfo: "***  Close this card to see the visual simulation ***",
       infoCard: true,
     };
   },
@@ -169,28 +169,47 @@ export default {
       };
       this.socket = new SockJS("http://localhost:8080/websockets");
       this.stompClient = Stomp.over(this.socket);
+      this.$root.$emit("visualDisplay");
+      setTimeout(()=>{
       this.stompClient.connect(
         {},
         () => {
           axios
             .post(this.$smartHomeBackend.getUrlSimulation(), simulationJson)
             .then(() => {
-              setTimeout(() => this.stompClient.disconnect(), 2000);
+              setTimeout(() => {this.stompClient.disconnect(), this.$root.$emit("simulationEnds") }, 2000);
             })
             .catch((err) => {
               this.simulationInfo = err;
             });
           this.stompClient.subscribe("/SimulationStatus", (message) => {
             this.simulationInfo = this.simulationInfo + "\n" + message.body;
+            this.visual(message.body);
           });
         },
         (error) => {
           this.simulationInfo = error;
         }
-      );
+      );}, 10);
     },
     close() {
       this.$emit("simulationClose");
+    },
+    visual(messageBody) {
+      this.$store.getters.agentNames.forEach((name) => {
+        if (messageBody.includes(name)) {
+          let positionStr = messageBody.substring(
+            messageBody.lastIndexOf("Position") + 8
+          );
+          let positionSplit = positionStr.split(",");
+          let xVal = parseInt(positionSplit[0].substring(4), 10);
+          let yVal = parseInt(
+            positionSplit[1].substring(3, positionSplit[1].length - 1),
+            10
+          );
+          this.$root.$emit("visualMoveAgent",name,xVal,yVal);//agentID,x,y
+        }
+      });
     },
   },
 };

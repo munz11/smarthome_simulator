@@ -148,6 +148,13 @@ export default new Vuex.Store({
         agentName.push(agent.id);
       })
       return agentName;     
+    },
+    agentPositions: state =>{
+      const positions:Map<string,position> = new Map<string,position>();
+      state.agents.forEach((agent:agent)=>{
+        positions.set(agent.id,agent.initialPosition);
+      })
+      return positions;
     }
   }
 });

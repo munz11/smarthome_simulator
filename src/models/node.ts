@@ -3,7 +3,7 @@ export default class node {
     id: string; //position on the grid x-y
     sensorName: Set<string>; // a node can contain multiple sensors 
     entityName: Set<string>; // a node can contain multiple entity names
-    walkable: Map<string,boolean>;
+    walkable: Map<string, boolean>;
     agentName: string; //as only one agent per node if allowed
 
     constructor(id: string) {
@@ -15,26 +15,40 @@ export default class node {
         this.walkable = new Map();
         this.agentName = "";
     }
-    hasWall():boolean{
+    hasWall(): boolean {
         return this.type.includes("wall");
     }
     setType(type: string) {
         this.type.push(type);
     }
-    removeAgent() {
-        this.type = this.type.filter(value => value !== "agent");
-        this.agentName = "";
+    removeAgent(agentName: string) {
+        if (this.agentName.includes(",")) {
+            let agents = this.agentName.split(",");
+            agents = agents.filter(value => value !== agentName);
+            this.agentName = agents.toString();
+            if(this.agentName==""){
+                this.type = this.type.filter(value => value !== "agent");
+            }
+        } else {
+            this.type = this.type.filter(value => value !== "agent");
+            this.agentName = "";
+        }
     }
     setSensor(sensorName: string, walkable: boolean) {
         this.sensorName.add(sensorName);
-        this.walkable.set(sensorName,walkable);
+        this.walkable.set(sensorName, walkable);
     }
     setEntity(entityName: string, walkable: boolean) {
         this.entityName.add(entityName);
-        this.walkable.set(entityName,walkable);
+        this.walkable.set(entityName, walkable);
     }
-    setAgentName(agentName:string){
-        this.agentName = this.agentName + agentName;
+    setAgentName(agentName: string) {
+        if (this.agentName == "") {
+            this.agentName = agentName;
+        } else {
+            this.agentName = this.agentName + "," + agentName;
+        }
+
     }
     removeWall() {
         this.type = this.type.filter(value => value !== "wall");
@@ -44,76 +58,99 @@ export default class node {
         this.type.push("empty");
         this.sensorName.clear();
         this.entityName.clear();
-        this.walkable =new Map();
+        this.walkable = new Map();
     }
-    getTypeofNode(filterText: string): string {
+    getTypeofNode(filterText: string, visual: string): string {
         if (filterText != "") {
             if (this.sensorName.has(filterText)) {
-                if(this.type.includes("sensorPhysical") &&this.type.includes("sensorInteract") ){
+                if (this.type.includes("sensorPhysical") && this.type.includes("sensorInteract")) {
                     return "overlap";
-                }else if(this.type.includes("sensorInteract")){
+                } else if (this.type.includes("sensorInteract")) {
                     return "interact";
-                }else if(this.type.includes("sensorPhysical")){
+                } else if (this.type.includes("sensorPhysical")) {
                     return "sensorPhysical";
                 }
             }
             if (this.entityName.has(filterText)) {
-                if(this.type.includes("entityPhysical") &&this.type.includes("entityInteract") ){
+                if (this.type.includes("entityPhysical") && this.type.includes("entityInteract")) {
                     return "overlap";
-                }else if(this.type.includes("entityInteract")){
+                } else if (this.type.includes("entityInteract")) {
                     return "interact";
-                }else if(this.type.includes("entityPhysical")){
+                } else if (this.type.includes("entityPhysical")) {
                     return "entityPhysical";
                 }
             }
             if (this.type.includes("agent")) {
                 return "agent"; //assuming that a node will contain an agent only if it can be added
-            }
-            if (this.type.includes("wall")) {
-                return "wall";
-            }
-            return "empty";
-        } {
-            if (this.type.includes("agent")) {
-                return "agent"; //assuming that a node will contain an agent only if it can be added
-            }
-            if (this.type.includes("sensorPhysical")) {
-                //check if any sensor is walkable
-                let printstr = "";
-                this.sensorName.forEach((name)=>{
-                    if(!this.walkable.get(name)){
-                        printstr =  "sensorPhysical";
-                    }
-                })
-                if(printstr=="sensorPhysical"){
-                    return "sensorPhysical";
-                } // so only show sensors physical area if it is not walkable
-            }
-            if (this.type.includes("entityPhysical")) {
-                let printstr = "";
-                this.entityName.forEach((name)=>{
-                    if(!this.walkable.get(name)){
-                        printstr =  "entityPhysical";
-                    }
-                })
-                if(printstr=="entityPhysical"){
-                    return "entityPhysical";
-                }  // so only show entities physical area if it is not walkable
             }
             if (this.type.includes("wall")) {
                 return "wall";
             }
             return "empty";
         }
+        if (visual == "true") {
+            if (this.type.includes("agent")) {
+                return "agent"; //assuming that a node will contain an agent only if it can be added
+            }
+            if (this.type.includes("sensorPhysical") && this.type.includes("sensorInteract")) {
+                return "overlap";
+            } else if (this.type.includes("sensorInteract")) {
+                return "interact";
+            } else if (this.type.includes("sensorPhysical")) {
+                return "sensorPhysical";
+            }
+            if (this.type.includes("entityPhysical") && this.type.includes("entityInteract")) {
+                return "overlap";
+            } else if (this.type.includes("entityInteract")) {
+                return "interact";
+            } else if (this.type.includes("entityPhysical")) {
+                return "entityPhysical";
+            }
+            if (this.type.includes("wall")) {
+                return "wall";
+            }
+            return "empty";
+        }
+        if (this.type.includes("agent")) {
+            return "agent"; //assuming that a node will contain an agent only if it can be added
+        }
+        if (this.type.includes("sensorPhysical")) {
+            //check if any sensor is walkable
+            let printstr = "";
+            this.sensorName.forEach((name) => {
+                if (!this.walkable.get(name)) {
+                    printstr = "sensorPhysical";
+                }
+            })
+            if (printstr == "sensorPhysical") {
+                return "sensorPhysical";
+            } // so only show sensors physical area if it is not walkable
+        }
+        if (this.type.includes("entityPhysical")) {
+            let printstr = "";
+            this.entityName.forEach((name) => {
+                if (!this.walkable.get(name)) {
+                    printstr = "entityPhysical";
+                }
+            })
+            if (printstr == "entityPhysical") {
+                return "entityPhysical";
+            }  // so only show entities physical area if it is not walkable
+        }
+        if (this.type.includes("wall")) {
+            return "wall";
+        }
+        return "empty";
+
     }
     setToString(setToConsider: Set<string>): string {
         return Array.from(setToConsider).join(', ');
     }
     displayNodeInfo(): string {
         //x-y,sensornames,entitynames
-        let display:string = this.id;
-        if(this.agentName!=""){
-            display = display + ","+ this.agentName;
+        let display: string = this.id;
+        if (this.agentName != "") {
+            display = display + "," + this.agentName;
         }
         if (this.sensorName.size == 0) {
             if (this.entityName.size !== 0) {
@@ -123,10 +160,10 @@ export default class node {
         } else if (this.entityName.size == 0) {
             return display + ", " + this.setToString(this.sensorName);
         }
-        return display + ", " + this.setToString(this.sensorName) + ", "+ this.setToString(this.entityName);
+        return display + ", " + this.setToString(this.sensorName) + ", " + this.setToString(this.entityName);
     }
     canAddAgentHere(): boolean {
-        if(this.type.includes("agent")){
+        if (this.type.includes("agent")) {
             return false;
         }
         if (this.type.includes("wall")) {

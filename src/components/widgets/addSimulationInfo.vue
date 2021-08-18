@@ -169,15 +169,15 @@ export default {
       };
       this.socket = new SockJS("http://localhost:8080/websockets");
       this.stompClient = Stomp.over(this.socket);
-      this.$root.$emit("visualDisplay");
-      setTimeout(()=>{
+      this.$store.commit("setVisualSimulation","true");
+      this.$root.$emit("visualSimulationUpdated");
       this.stompClient.connect(
         {},
         () => {
           axios
             .post(this.$smartHomeBackend.getUrlSimulation(), simulationJson)
             .then(() => {
-              setTimeout(() => {this.stompClient.disconnect(), this.$root.$emit("simulationEnds") }, 2000);
+              setTimeout(() => {this.stompClient.disconnect(); alert("Simulation has ended."); this.$store.commit("setVisualSimulation","false"); this.$root.$emit("visualSimulationUpdated"); }, 2000);
             })
             .catch((err) => {
               this.simulationInfo = err;
@@ -190,7 +190,7 @@ export default {
         (error) => {
           this.simulationInfo = error;
         }
-      );}, 10);
+      );
     },
     close() {
       this.$emit("simulationClose");

@@ -105,7 +105,7 @@ export default {
       saveNode: null,
       dbBoth: false,
       agentsPositions: new Map(),
-      visual: false,
+      visual: this.$store.state.visualSimulation,
     };
   },
   methods: {
@@ -132,7 +132,7 @@ export default {
     getClass(ID) {
       return this.displayedNodes
         .get(ID)
-        .getTypeofNode(this.$store.state.filterText);
+        .getTypeofNode(this.$store.state.filterText, this.visual);
     },
     updateClass(ID) {
       let l = document.getElementById(ID);
@@ -141,7 +141,7 @@ export default {
           "class",
           this.displayedNodes
             .get(ID)
-            .getTypeofNode(this.$store.state.filterText)
+            .getTypeofNode(this.$store.state.filterText, this.visual)
         );
       }
     },
@@ -687,25 +687,40 @@ export default {
         }
       }
     },
-    visualAgentOnNewNode(newPosition,agentName) {
-      this.displayedNodes
-        .get(this.getID(newPosition))
-        .setType("agent");
-      this.displayedNodes
-        .get(this.getID(newPosition))
-        .setAgentName(agentName);
+    updateAgentNodes() {
+      let agents = this.$store.state.agents;
+      for (let i = 0; i < agents.length; i++) {
+        this.showAgentOnNode(agents[i]);
+        this.updateClass(this.getID(agents[i].initialPosition));
+      }
+    },
+    visualAgentOnNewNode(newPosition, agentName) {
+      this.displayedNodes.get(this.getID(newPosition)).setType("agent");
+      this.displayedNodes.get(this.getID(newPosition)).setAgentName(agentName);
       this.updateClass(this.getID(newPosition));
     },
-    visualRemoveAgent(position){
-      this.displayedNodes.get(this.getID(position)).removeAgent();
+    visualRemoveAgent(position,agentName) {
+      this.displayedNodes.get(this.getID(position)).removeAgent(agentName);
       this.updateClass(this.getID(position));
     },
     visualMoveAgent(agentName, newX, newY) {
       let oldPosition = this.agentsPositions.get(agentName);
-      this.visualRemoveAgent(oldPosition);
-      let newPosition = new position(newX,newY);
-      this.visualAgentOnNewNode(newPosition,agentName);
-      this.agentsPositions.set(agentName,newPosition);
+      this.visualRemoveAgent(oldPosition,agentName);
+      let newPosition = new position(newX, newY);
+      this.visualAgentOnNewNode(newPosition, agentName);
+      this.agentsPositions.set(agentName, newPosition);
+    },
+    updateGridForVisualSimulation() {
+      if (this.visual == "true") {
+        this.agentsPositions = this.$store.getters.agentPositions;
+        this.updateSensorEntityNodes();
+      } else {
+        this.agentsPositions.forEach((value) => {
+          this.visualRemoveAgent(value);
+        });
+        this.updateSensorEntityNodes();
+        this.updateAgentNodes();
+      }
     },
   },
   beforeMount() {
@@ -719,14 +734,11 @@ export default {
   mounted() {
     this.calculateNodesDisplayed();
     this.updateNodesToStore();
+    this.updateGridForVisualSimulation();
     this.$root.$on("visualMoveAgent", (agentName, x, y) => {
-      if(this.visual){
-      this.visualMoveAgent(agentName, x, y);  
+      if (this.visual == "true") {
+        this.visualMoveAgent(agentName, x, y);
       }
-    });
-    this.$root.$on("visualDisplay",() =>{
-      this.agentsPositions = this.$store.getters.agentPositions;
-      this.visual=true;
     });
     this.$root.$on("gridClear", () => {
       this.clear();
@@ -752,11 +764,15 @@ export default {
     this.$root.$on("gridAddAgent", () => {
       this.addAgent();
     });
+    this.$root.$on("visualSimulationUpdated", () => {
+      this.visual = this.$store.state.visualSimulation;
+      this.updateGridForVisualSimulation();
+    });
   },
   watch: {
     filterText: function () {
       this.updateSensorEntityNodes();
-    }
+    },
   },
 };
 </script>

@@ -40,11 +40,7 @@ export default {
     closeSnackBar() {
       this.snackBar = false;
       this.text = "";
-      if(this.btnText!=="Close"){
-        this.$router.push({ name: "Home" });
-      }
-      this.btnText = "";
-      this.$router.go();
+      this.$router.push({ name: "Home" });
     },
   },
   beforeMount() {
@@ -61,11 +57,6 @@ export default {
     this.$root.$on("simulationInfoAdd", () => {
       this.simulationInfo = true;
     });
-    this.$root.$on("simulationEnds",()=>{
-      this.text = "The simulation has ended.";
-      this.btnText = "Close";
-      this.snackBar = true;
-    })
   },
 };
 </script>

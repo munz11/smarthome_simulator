@@ -11,18 +11,23 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    agents: JSON.parse(""+sessionStorage.getItem("agents")) ||Array<agent>(),
+    agents: JSON.parse("" + sessionStorage.getItem("agents")) || Array<agent>(),
     sensors: Array<sensor>(),
-    entities: JSON.parse(""+sessionStorage.getItem("entities")) || Array<entity>(),
-    walls: JSON.parse(""+sessionStorage.getItem("walls")) || Array<position>(),
-    floorPlanDetails: JSON.parse(""+sessionStorage.getItem("floorPlanDetails")) || new floorPlanDetails(0, 0, 0),
-    passiveSensors: JSON.parse(""+sessionStorage.getItem("passiveSensors")) || Array<string>(),
-    activeSensors: JSON.parse(""+sessionStorage.getItem("activeSensors")) || Array<string>(),
+    entities: JSON.parse("" + sessionStorage.getItem("entities")) || Array<entity>(),
+    walls: JSON.parse("" + sessionStorage.getItem("walls")) || Array<position>(),
+    floorPlanDetails: JSON.parse("" + sessionStorage.getItem("floorPlanDetails")) || new floorPlanDetails(0, 0, 0),
+    passiveSensors: JSON.parse("" + sessionStorage.getItem("passiveSensors")) || Array<string>(),
+    activeSensors: JSON.parse("" + sessionStorage.getItem("activeSensors")) || Array<string>(),
     filterText: sessionStorage.getItem("filterText") || "",
     activities: sessionStorage.getItem("activities") || "",
+    visualSimulation: sessionStorage.getItem("visualSimulation") || "false",
   },
 
   mutations: {
+    setVisualSimulation(state, newVisual: string) {
+      state.visualSimulation = newVisual;
+      sessionStorage.setItem("visualSimulation", state.visualSimulation);
+    },
     addActiveSensors(state, newActive: string[]) {
       state.activeSensors = newActive;
       sessionStorage.setItem("activeSensors", JSON.stringify(state.activeSensors));
@@ -53,9 +58,9 @@ export default new Vuex.Store({
     },
     addWall(state, newWall: position) {
       let foundWall = false;
-      state.walls.forEach((wall:position) => {
-        if(JSON.stringify(wall)===JSON.stringify(newWall)){
-          foundWall=true;
+      state.walls.forEach((wall: position) => {
+        if (JSON.stringify(wall) === JSON.stringify(newWall)) {
+          foundWall = true;
         }
       });
       if (!foundWall) {
@@ -67,30 +72,30 @@ export default new Vuex.Store({
       state.walls = state.walls.filter((e: position) => !(e.x == wall.x && e.y == wall.y));
       sessionStorage.setItem("walls", JSON.stringify(state.walls));
     },
-    removeSensor(state,sensor:sensor){
-      state.sensors = state.sensors.filter((e:sensor)=>!(e.name == sensor.name));
+    removeSensor(state, sensor: sensor) {
+      state.sensors = state.sensors.filter((e: sensor) => !(e.name == sensor.name));
       sessionStorage.setItem("sensors", JSON.stringify(state.sensors));
     },
-    removeEntity(state,entity:entity){
-      state.entities = state.entities.filter((e:entity)=>!(e.name==entity.name));
+    removeEntity(state, entity: entity) {
+      state.entities = state.entities.filter((e: entity) => !(e.name == entity.name));
       sessionStorage.setItem("entities", JSON.stringify(state.entities));
     },
-    removeAgent(state,agent:agent){
-      state.agents = state.agents.filter((e:agent)=>!(e.id==agent.id));
+    removeAgent(state, agent: agent) {
+      state.agents = state.agents.filter((e: agent) => !(e.id == agent.id));
       sessionStorage.setItem("agents", JSON.stringify(state.agents));
-    },    
-    editEntity(state,entity:entity){
-      state.entities = state.entities.filter((e:entity)=>!(e.name==entity.name));
+    },
+    editEntity(state, entity: entity) {
+      state.entities = state.entities.filter((e: entity) => !(e.name == entity.name));
       state.entities.push(entity);
       sessionStorage.setItem("entities", JSON.stringify(state.entities));
     },
-    editSensor(state,sensor:sensor){
-      state.sensors = state.sensors.filter((e:sensor)=>!(e.name==sensor.name));
+    editSensor(state, sensor: sensor) {
+      state.sensors = state.sensors.filter((e: sensor) => !(e.name == sensor.name));
       state.sensors.push(sensor);
       sessionStorage.setItem("sensors", JSON.stringify(state.sensors));
     },
-    editAgent(state,agent:agent){
-      state.agents = state.agents.filter((e:agent)=>!(e.id==agent.id));
+    editAgent(state, agent: agent) {
+      state.agents = state.agents.filter((e: agent) => !(e.id == agent.id));
       state.agents.push(agent);
       sessionStorage.setItem("agents", JSON.stringify(state.agents));
     },
@@ -119,40 +124,40 @@ export default new Vuex.Store({
     lastAgentAdded: state => {
       return state.agents[state.agents.length - 1];
     },
-    listSensors: state =>{
-      if(state.sensors.length==0 && sessionStorage.getItem("sensors")!==null){
-        const sensorsObject = JSON.parse(""+sessionStorage.getItem("sensors"));
-        for(let i=0;i<sensorsObject.length;i++){
-          state.sensors.push(new sensor(sensorsObject[i].name,sensorsObject[i].physicalArea,sensorsObject[i].interactArea,sensorsObject[i].triggerFrequency,sensorsObject[i].type,sensorsObject[i].walkable,sensorsObject[i].sensorType));
+    listSensors: state => {
+      if (state.sensors.length == 0 && sessionStorage.getItem("sensors") !== null) {
+        const sensorsObject = JSON.parse("" + sessionStorage.getItem("sensors"));
+        for (let i = 0; i < sensorsObject.length; i++) {
+          state.sensors.push(new sensor(sensorsObject[i].name, sensorsObject[i].physicalArea, sensorsObject[i].interactArea, sensorsObject[i].triggerFrequency, sensorsObject[i].type, sensorsObject[i].walkable, sensorsObject[i].sensorType));
         }
       }
       return state.sensors;
     },
-    sensorNames: (state,getters) =>{
-      const sensorName:string[] = [];
-      getters.listSensors.forEach((sensor:any) =>{
+    sensorNames: (state, getters) => {
+      const sensorName: string[] = [];
+      getters.listSensors.forEach((sensor: any) => {
         sensorName.push(sensor.name);
       })
       return sensorName;
     },
-    entityNames: state =>{
-      const entityName:string[] = [];
-      state.entities.forEach((entity:any) =>{
+    entityNames: state => {
+      const entityName: string[] = [];
+      state.entities.forEach((entity: any) => {
         entityName.push(entity.name);
       })
-      return entityName;     
+      return entityName;
     },
-    agentNames: state =>{
-      const agentName:string[] = [];
-      state.agents.forEach((agent:agent) =>{
+    agentNames: state => {
+      const agentName: string[] = [];
+      state.agents.forEach((agent: agent) => {
         agentName.push(agent.id);
       })
-      return agentName;     
+      return agentName;
     },
-    agentPositions: state =>{
-      const positions:Map<string,position> = new Map<string,position>();
-      state.agents.forEach((agent:agent)=>{
-        positions.set(agent.id,agent.initialPosition);
+    agentPositions: state => {
+      const positions: Map<string, position> = new Map<string, position>();
+      state.agents.forEach((agent: agent) => {
+        positions.set(agent.id, agent.initialPosition);
       })
       return positions;
     }

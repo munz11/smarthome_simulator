@@ -39,16 +39,16 @@
             aforementioned problem and paves the way for further research in the
             area by acting as a proof of concept.
             </p>
-            <p>The complete report is availabe at:<a href="https://findit.dtu.dk/en/catalog/2691894192" target="_blank">https://findit.dtu.dk/en/catalog/2691894192</a>.</p>
+            <p>The complete report is availabe at: <a href="https://findit.dtu.dk/en/catalog/2691894192" target="_blank">https://findit.dtu.dk/en/catalog/2691894192</a>.</p>
 
             <p>The source code of this web-application is available at:</p>
             <ul>
-            <li>Backend:<a href="https://github.com/DTU-SPE/linac-backend" target="_blank">https://github.com/DTU-SPE/linac-backend</a></li>
-            <li>Frontend:<a href="https://github.com/DTU-SPE/linac-frontend" target="_blank">https://github.com/DTU-SPE/linac-frontend</a></li>
+            <li>Backend: <a href="https://github.com/DTU-SPE/linac-backend" target="_blank">https://github.com/DTU-SPE/linac-backend</a></li>
+            <li>Frontend: <a href="https://github.com/DTU-SPE/linac-frontend" target="_blank">https://github.com/DTU-SPE/linac-frontend</a></li>
             </ul>
-            <p>The API are currently hosted at DTU, and the frontend randomly connects to one of them. To use the API these hosts can currently be used:</p>
+            <p>The documentation for the backend is available as <a href="https://editor.swagger.io/?url=https://raw.githubusercontent.com/DTU-SPE/linac-backend/main/RestAPI_Documentation.yaml" target="_blank">Swagger YAML file</a>. The API are currently hosted at DTU, and can be accessed at:</p>
             <ul>
-            <li><code>linac.compute.dtu.dk</code> using <code>http</code></li>
+            <li><code>linac.compute.dtu.dk</code> using <code>https</code></li>
             </ul>
             <p>The service is offered with no guarantees.</p>
         </main>

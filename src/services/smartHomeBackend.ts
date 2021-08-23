@@ -1,7 +1,7 @@
 export default class smartHomeBackend {
   url: { protocol: string; hostname: string };
   constructor() {
-    this.url = { protocol: "http", hostname: "linac.compute.dtu.dk" };
+    this.url = { protocol: "https", hostname: "linac.compute.dtu.dk" };
   }
 
   getUrl(): string {

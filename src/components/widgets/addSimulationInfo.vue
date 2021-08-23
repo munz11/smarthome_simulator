@@ -162,7 +162,7 @@ export default {
         csvOutput: false,
         csvFileName: "test",
       };
-      this.socket = new SockJS("http://linac.compute.dtu.dk/websockets");
+      this.socket = new SockJS("https://linac.compute.dtu.dk/websockets");
       this.stompClient = Stomp.over(this.socket);
       this.$store.commit("setVisualSimulation","true");
       this.$root.$emit("visualSimulationUpdated");

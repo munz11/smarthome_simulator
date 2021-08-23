@@ -1,5 +1,5 @@
 <template>
-  <footer class="mb-1 mx-3 small" style="position: fixed; bottom: 0; right: 0">
+  <footer class="mb-1 mx-3 small" style="position: fixed; bottom: 0;">
     <p>
       <font-awesome-icon icon="circle" v-bind:class="this.systemStatus" />
       {{ this.getSystemStatus() }}

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card v-resize="onResize" :height="y" :width="x">
+    <v-card class="m-3">
       <v-list dense>
         <v-list-item>
           <v-text-field

@@ -1,10 +1,8 @@
 <template>
   <div>
-    <v-card v-resize="onResize" :height="y" :width="x">
+    <v-card v-resize="onResize" class="m-3">
       <v-list dense>
-        <v-list-item>
-          <AddInput />
-        </v-list-item>
+        <AddInput />
         <v-list-item>
           <v-text-field
             label="Filter"

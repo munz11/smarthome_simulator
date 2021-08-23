@@ -3,10 +3,8 @@
     <v-card
       class="mx-auto"
       width="500"
-      height="550"
       outlined
       elevation="2"
-      shaped
     >
       <div v-if="infoCard">
         <v-card-title
@@ -44,10 +42,9 @@
                 ></v-text-field>
               </v-col>
             </v-row>
-            <v-checkbox
+            <b-form-checkbox
               v-model="instantSimulation"
-              label="Instant Simulation"
-            ></v-checkbox>
+            >Instant Simulation</b-form-checkbox>
             <v-text-field
               label="Relative Time"
               v-model="relativeTime"
@@ -66,7 +63,7 @@
                 (v) => /^\d*$/.test(v) || 'Enter a number',
               ]"
             ></v-text-field>
-            <v-checkbox v-model="mqttOutput" label="Mqtt Output"></v-checkbox>
+            <b-form-checkbox v-model="mqttOutput">Mqtt Output</b-form-checkbox>
             <v-row>
               <v-col>
                 <v-text-field
@@ -127,8 +124,8 @@ export default {
   name: "AddSimulationInfo",
   data: () => {
     return {
-      date: "",
-      time: "",
+      date: "2021-01-01",
+      time: "08:00:00",
       instantSimulation: false,
       relativeTime: 1,
       mqttOutput: false,
@@ -136,7 +133,7 @@ export default {
       mqttPort: "1883",
       rootTopic: "smartHome",
       isValid: true,
-      seed: "",
+      seed: "42",
       simulationInfo: "***  Close this card to see the visual simulation ***",
       infoCard: true,
     };
@@ -167,7 +164,7 @@ export default {
         rootTopic: this.rootTopic,
         seed: this.seed,
       };
-      this.socket = new SockJS("https://smart-home-simulator-backend.herokuapp.com/websockets");
+      this.socket = new SockJS("http://linac.compute.dtu.dk/websockets");
       this.stompClient = Stomp.over(this.socket);
       this.$store.commit("setVisualSimulation","true");
       this.$root.$emit("visualSimulationUpdated");

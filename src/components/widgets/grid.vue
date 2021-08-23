@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <v-card :height="y" :width="x" v-resize="onResize">
+  <div class="pl-3">
+    <v-card v-resize="onResize" class="shadow-none">
       <tbody>
         <tr v-for="row in currentRows" :key="row">
           <td

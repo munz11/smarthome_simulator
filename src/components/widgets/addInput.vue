@@ -1,12 +1,15 @@
 <template>
   <div>
+  <v-list-item>
     <v-textarea
       filled
       name="input-7-4"
-      label="Enter Activities"
+      label="Enter simulation code"
       v-model="activities"
     ></v-textarea>
-    <v-btn outlined rounded text @click="submitActivitiesAndFloorPlan">
+  </v-list-item>
+  <v-list-item>
+    <v-btn outlined text @click="submitActivitiesAndFloorPlan">
       Start Simulation
     </v-btn>
     <v-snackbar v-model="SnackBar" timeout="-1">
@@ -18,6 +21,7 @@
         </v-btn>
       </template>
     </v-snackbar>
+  </v-list-item>
   </div>
 </template>
 

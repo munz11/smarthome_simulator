@@ -49,10 +49,6 @@
               label="Relative Time"
               v-model="relativeTime"
               required
-              :rules="[
-                (v) => !!v || 'Required',
-                (v) => /^\d*$/.test(v) || 'Enter a number',
-              ]"
             ></v-text-field>
             <v-text-field
               label="Seed"
@@ -127,13 +123,13 @@ export default {
       date: "2021-01-01",
       time: "08:00:00",
       instantSimulation: false,
-      relativeTime: 1,
+      relativeTime: 0.1,
       mqttOutput: false,
       mqttHost: "broker.hivemq.com",
       mqttPort: "1883",
       rootTopic: "smartHome",
       isValid: true,
-      seed: "42",
+      seed: 42,
       simulationInfo: "***  Close this card to see the visual simulation ***",
       infoCard: true,
     };
@@ -163,6 +159,8 @@ export default {
         mqttPort: this.mqttPort,
         rootTopic: this.rootTopic,
         seed: this.seed,
+        csvOutput: false,
+        csvFileName: "test",
       };
       this.socket = new SockJS("http://linac.compute.dtu.dk/websockets");
       this.stompClient = Stomp.over(this.socket);

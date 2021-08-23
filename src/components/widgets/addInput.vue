@@ -60,7 +60,7 @@ export default {
         .post(this.$smartHomeBackend.getUrlRoomConfig(), floorPlan)
         .then(() => {
           axios
-            .post(this.$smartHomeBackend.getUrlInput(), this.$store.state.activities, {
+            .post(this.$smartHomeBackend.getUrlInput(), {input: this.$store.state.activities.replace(/\n/g, " ")}, {
               headers: { "content-type": "application/json" },
             })
             .then((resInput) => {

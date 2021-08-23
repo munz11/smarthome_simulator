@@ -48,7 +48,7 @@
             </ul>
             <p>The documentation for the backend is available as <a href="https://editor.swagger.io/?url=https://raw.githubusercontent.com/DTU-SPE/linac-backend/main/RestAPI_Documentation.yaml" target="_blank">Swagger YAML file</a>. The API are currently hosted at DTU, and can be accessed at:</p>
             <ul>
-            <li><code>linac.compute.dtu.dk</code> using <code>https</code></li>
+            <li><code>linac.compute.dtu.dk</code> using <code>http</code></li>
             </ul>
             <p>The service is offered with no guarantees.</p>
         </main>

@@ -1,16 +1,6 @@
 <template>
-  <div>
-    <v-card
-      class="mx-auto"
-      width="500"
-      outlined
-      elevation="2"
-    >
-      <div v-if="infoCard">
-        <v-card-title
-          >Please enter details for the simulation
-          <v-btn text @click="close"> &times; </v-btn></v-card-title
-        >
+  <b-modal id="modal-simulation" title="Simulation configuration" @ok="alert(1)">
+    <div v-if="infoCard">
         <v-card-text>
           <v-form v-model="isValid">
             <v-row>
@@ -88,28 +78,41 @@
             </v-row>
           </v-form>
         </v-card-text>
-        <v-card-actions>
-          <v-btn outlined rounded text :disabled="!isValid" @click="submit">
-            Submit</v-btn
-          >
-        </v-card-actions>
-      </div>
-      <div v-if="!infoCard">
-        <v-card-title
-          >Server output
-          <v-btn text @click="close"> &times; </v-btn>
-        </v-card-title>
-        <v-card-text>
-          <b-form-textarea
-            :value="simulationInfo"
-            plaintext
-            rows="18"
-            max-rows="18"
-          ></b-form-textarea>
-        </v-card-text>
-      </div>
-    </v-card>
-  </div>
+    </div>
+    <div v-if="!infoCard">
+        <b-form-textarea
+          :value="simulationInfo"
+          plaintext
+          class="editor"
+        ></b-form-textarea>
+    </div>
+        <template #modal-footer>
+          <b-button
+            variant="secondary"
+            class="float-right"
+            @click="$bvModal.hide('modal-simulation')"
+            v-if="infoCard"
+          >Cancel</b-button>
+          <b-button
+            variant="primary"
+            class="float-right"
+            @click="submit"
+            v-if="infoCard"
+          >Start simulation</b-button>
+          <b-button
+            variant="secondary"
+            class="float-right"
+            @click="reset()"
+            v-if="!infoCard"
+          >Reset simulation</b-button>
+          <b-button
+            variant="primary"
+            class="float-right"
+            @click="$bvModal.hide('modal-simulation')"
+            v-if="!infoCard"
+          >Close</b-button>
+        </template>
+  </b-modal>
 </template>
 
 <script>
@@ -135,6 +138,9 @@ export default {
     };
   },
   methods: {
+    reset() {
+      this.infoCard = true;
+    },
     submit() {
       this.infoCard = false;
       let dateObject = new Date();
@@ -162,6 +168,7 @@ export default {
         csvOutput: false,
         csvFileName: "test",
       };
+      // this.$bvModal.hide('modal-simulation');
       this.socket = new SockJS("http://linac.compute.dtu.dk/websockets");
       this.stompClient = Stomp.over(this.socket);
       this.$store.commit("setVisualSimulation","true");
@@ -172,13 +179,19 @@ export default {
           axios
             .post(this.$smartHomeBackend.getUrlSimulation(), simulationJson)
             .then(() => {
-              setTimeout(() => {this.stompClient.disconnect(); alert("Simulation has ended."); this.$store.commit("setVisualSimulation","false"); this.$root.$emit("visualSimulationUpdated"); }, 2000);
+              setTimeout(() => {
+                this.stompClient.disconnect();
+                alert("Simulation has ended.");
+                this.$store.commit("setVisualSimulation","false");
+                this.$root.$emit("visualSimulationUpdated");
+              },
+              2000);
             })
             .catch((err) => {
               this.simulationInfo = err;
             });
           this.stompClient.subscribe("/SimulationStatus", (message) => {
-            this.simulationInfo = this.simulationInfo + "\n" + message.body;
+            this.simulationInfo = message.body + "\n" + this.simulationInfo;
             this.visual(message.body);
           });
         },
@@ -209,3 +222,22 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.editor {
+  background: #333;
+  color: #ccc;
+  /* border: 1px solid rgb(224, 224, 224); */
+  width: 100%;
+  height: 300px;
+  padding: 10px;
+  font-size: 10pt;
+  font-family: monospace;
+  white-space: pre;
+  /* white-space: nowrap; will prevent the default wrapping of text to next line */
+  overflow-x: auto; /* will make horizontal scroll-bar appear only when needed */
+}
+.editor:focus {
+    outline: none !important;
+}
+</style>

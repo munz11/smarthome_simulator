@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card class="mx-auto" max-width="600" outlined elevation="2" shaped>
+    <v-card class="mx-auto" max-width="600" outlined elevation="2">
       <v-card-title
         >Edit Agent
         <v-btn text @click="close"> &times; </v-btn>

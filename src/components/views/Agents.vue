@@ -26,10 +26,8 @@
           ></v-text-field>
         </template>
         <template v-slot:[`item.actions`]="{ item }">
-          <v-icon small class="mr-2" @click="editItem(item)">
-            mdi-pencil
-          </v-icon>
-          <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
+          <b-button variant="link" @click="editItem(item)"><font-awesome-icon icon="edit" /></b-button>
+          <b-button variant="link" @click="deleteItem(item)"><font-awesome-icon icon="trash" /></b-button>
         </template>
       </v-data-table>
     </b-container>

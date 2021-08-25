@@ -15,17 +15,33 @@
           @click="executeEvent(item.eventName)"
         >
           <v-list-item-content>
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
+            <v-list-item-title>
+              <font-awesome-icon :icon=item.icon />
+              {{ item.title }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
 
-        <v-list-item @click="showUploadDownload = true">
+        <v-list-item
+          v-for="item in itemsInline"
+          :key="item.title"
+          class="float-left"
+          @click="executeEvent(item.eventName)"
+        >
           <v-list-item-content>
-            <v-list-item-title>Upload / Download</v-list-item-title>
+            <v-list-item-title><font-awesome-icon :icon=item.icon /></v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item @click="{}" v-b-modal.modal-upload style="clear: both">
+          <v-list-item-content>
+            <v-list-item-title>
+              <font-awesome-icon icon="upload" /> Upload / Download
+            </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
       <v-divider />
+
       <v-list-item>
         <v-list-item-content>
           <v-list-item-subtitle class="text-wrap">{{
@@ -34,28 +50,33 @@
         </v-list-item-content>
       </v-list-item>
     </v-card>
-    <v-overlay :value="showUploadDownload" :light="true" :dark="false">
+
+    <b-modal id="modal-upload" title="Upload or download the floor plan">
       <UploadDownload @closeCard="closeCardRefresh" />
-    </v-overlay>
+    </b-modal>
+
   </div>
 </template>
 
 <script>
 import UploadDownload from "@/components/widgets/uploadDownload.vue";
+// import About from '../views/About.vue';
 export default {
   name: "FloorPlanMenu",
   components: { UploadDownload },
   data() {
     return {
       items: [
-        { title: "Add Sensor", eventName: "gridAddSensor" },
-        { title: "Add Entity", eventName: "gridAddEntity" },
-        { title: "Add Agent", eventName: "gridAddAgent" },
-        { title: "Clear", eventName: "gridClear" },
-        { title: "Up", eventName: "gridPanUp" },
-        { title: "Down", eventName: "gridPanDown" },
-        { title: "Left", eventName: "gridPanLeft" },
-        { title: "Right", eventName: "gridPanRight" },
+        { title: "Add Sensor", eventName: "gridAddSensor", icon: "lightbulb" },
+        { title: "Add Entity", eventName: "gridAddEntity", icon: "layer-group" },
+        { title: "Add Agent", eventName: "gridAddAgent", icon: "walking" },
+      ],
+      itemsInline: [
+        { eventName: "gridPanUp", icon: "angle-up" },
+        { eventName: "gridPanDown", icon: "angle-down" },
+        { eventName: "gridPanLeft", icon: "angle-left" },
+        { eventName: "gridPanRight", icon: "angle-right" },
+        { eventName: "gridClear", icon: "trash" },
       ],
       y: window.innerHeight - 57,
       x: window.innerWidth * 0.15,

@@ -21,9 +21,8 @@
         </v-btn>
       </template>
     </v-snackbar>
-    <v-overlay :value="simulationInfo" :light="true" :dark="false">
-      <AddSimulationInfo @simulationClose="simulationInfo = false" />
-    </v-overlay>
+    
+    <AddSimulationInfo @simulationClose="simulationInfo = false" />
   </b-row>
 </template>
 

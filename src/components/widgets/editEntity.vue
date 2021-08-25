@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card class="mx-auto" max-width="600" outlined elevation="2" shaped>
+    <v-card class="mx-auto" max-width="600" outlined elevation="2">
       <v-card-title>Edit Entity
         <v-btn text @click="close"> &times; </v-btn>
       </v-card-title>
@@ -12,7 +12,7 @@
             required
             disabled
           ></v-text-field>
-          <v-checkbox v-model="walkable" label="walkable"></v-checkbox>
+          <b-checkbox v-model="walkable">Walkable</b-checkbox>
         </v-form>
       </v-card-text>
       <v-card-actions>

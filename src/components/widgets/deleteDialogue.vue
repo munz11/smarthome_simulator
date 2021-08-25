@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card class="mx-auto" max-width="500" outlined elevation="2" shaped>
+    <v-card class="mx-auto" max-width="500" outlined elevation="2" >
       <v-card-title
         >Are you sure you want to delete this item?
         <br />

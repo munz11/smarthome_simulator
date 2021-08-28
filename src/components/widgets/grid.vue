@@ -694,6 +694,13 @@ export default {
         this.updateClass(this.getID(agents[i].initialPosition));
       }
     },
+    updateAgentsPositionsList(){
+      this.agentsPositions = new Map();
+      let agents = this.$store.state.agents;
+      for (let i = 0; i < agents.length; i++) {
+        this.agentsPositions.set(agents[i].id,agents[i].initialPosition);
+      };
+    },
     visualAgentOnNewNode(newPosition, agentName) {
       this.displayedNodes.get(this.getID(newPosition)).setType("agent");
       this.displayedNodes.get(this.getID(newPosition)).setAgentName(agentName);
@@ -712,12 +719,13 @@ export default {
     },
     updateGridForVisualSimulation() {
       if (this.visual == "true") {
-        this.agentsPositions = this.$store.getters.agentPositions;
+        this.updateAgentsPositionsList();
         this.updateSensorEntityNodes();
       } else {
         this.agentsPositions.forEach((value) => {
           this.visualRemoveAgent(value);
         });
+        this.updateAgentsPositionsList();
         this.updateSensorEntityNodes();
         this.updateAgentNodes();
       }

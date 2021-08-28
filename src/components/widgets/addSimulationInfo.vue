@@ -38,6 +38,11 @@
             <v-text-field
               label="Relative Time"
               v-model="relativeTime"
+              hint="1.0"
+              :rules="[
+                (v) => !!v || 'Required',
+                (v) => /^\d*\.\d{0,2}$/.test(v) || 'Enter a number with max 2 decimal places',
+              ]"
               required
             ></v-text-field>
             <v-text-field
@@ -46,7 +51,7 @@
               hint="3"
               :rules="[
                 (v) => !!v || 'Required',
-                (v) => /^\d*$/.test(v) || 'Enter a number',
+                (v) => /[123]/.test(v) || 'Enter either 0, 1 or 2',
               ]"
             ></v-text-field>
             <b-form-checkbox v-model="mqttOutput">Mqtt Output</b-form-checkbox>
@@ -132,7 +137,7 @@ export default {
       mqttPort: "1883",
       rootTopic: "smartHome",
       isValid: true,
-      seed: 42,
+      seed: 0,
       simulationInfo: "***  Close this card to see the visual simulation ***",
       infoCard: true,
     };
@@ -191,7 +196,7 @@ export default {
               this.simulationInfo = err;
             });
           this.stompClient.subscribe("/SimulationStatus", (message) => {
-            this.simulationInfo = message.body + "\n" + this.simulationInfo;
+            this.simulationInfo = this.simulationInfo +"\n" + message.body;
             this.visual(message.body);
           });
         },
@@ -205,7 +210,7 @@ export default {
     },
     visual(messageBody) {
       this.$store.getters.agentNames.forEach((name) => {
-        if (messageBody.includes(name)) {
+        if (messageBody.includes(name) && messageBody.includes("Position")) {
           let positionStr = messageBody.substring(
             messageBody.lastIndexOf("Position") + 8
           );

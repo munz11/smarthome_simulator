@@ -22,17 +22,9 @@ export default class node {
         this.type.push(type);
     }
     removeAgent(agentName: string) {
-        if (this.agentName.includes(",")) {
-            let agents = this.agentName.split(",");
-            agents = agents.filter(value => value !== agentName);
-            this.agentName = agents.toString();
-            if(this.agentName==""){
-                this.type = this.type.filter(value => value !== "agent");
-            }
-        } else {
-            this.type = this.type.filter(value => value !== "agent");
-            this.agentName = "";
-        }
+
+        this.type = this.type.filter(value => value !== "agent");
+        this.agentName = "";
     }
     setSensor(sensorName: string, walkable: boolean) {
         this.sensorName.add(sensorName);
@@ -43,11 +35,8 @@ export default class node {
         this.walkable.set(entityName, walkable);
     }
     setAgentName(agentName: string) {
-        if (this.agentName == "") {
-            this.agentName = agentName;
-        } else {
-            this.agentName = this.agentName + "," + agentName;
-        }
+        this.agentName = agentName;
+
 
     }
     removeWall() {

@@ -1,27 +1,39 @@
 <template>
   <div>
-    <v-textarea
-      filled
-      name="input-7-4"
-      label="Enter Activities"
-      v-model="activities"
-    ></v-textarea>
-    <v-btn outlined rounded text @click="submitActivitiesAndFloorPlan">
+    
+    <b-card class="m-3 mt-0 p-0">
+      <template #header>
+        <strong class="align-bottom">Code</strong>
+        <b-button variant="outline-secondary" class="float-right" size="sm" v-b-modal.modal-simulation-code>Edit</b-button>
+      </template>
+      <b-card-text style="height: 5em; overflow: hidden;" v-b-modal.modal-simulation-code>
+        <pre v-if="activities.length > 0" style="color: #bbb !important;">{{ activities }}</pre>
+        <p v-else class="mt-3 text-center">Click here to insert the simulation code</p>
+      </b-card-text>
+    </b-card>
+    <b-modal id="modal-simulation-code" title="Simulation code">
+      <b-form-textarea class="editor" v-model="activities" placeholder="Enter here your code..." />
+    </b-modal>
+
+  <v-list-item>
+    <b-button @click="submitActivitiesAndFloorPlan">
+      <font-awesome-icon icon="play-circle" />
       Start Simulation
-    </v-btn>
+    </b-button>
     <v-snackbar v-model="SnackBar" timeout="-1">
       {{ text }}
-
       <template v-slot:action="{ attrs }">
         <v-btn color="pink" text v-bind="attrs" @click="closeSnackBar">
           {{ btnText }}
         </v-btn>
       </template>
     </v-snackbar>
+  </v-list-item>
   </div>
 </template>
 
 <script>
+
 import axios from "axios";
 export default {
   name: "AddInput",
@@ -56,12 +68,13 @@ export default {
         .post(this.$smartHomeBackend.getUrlRoomConfig(), floorPlan)
         .then(() => {
           axios
-            .post(this.$smartHomeBackend.getUrlInput(), this.$store.state.activities, {
+            .post(this.$smartHomeBackend.getUrlInput(), {input: this.$store.state.activities.replace(/\n/g, " ")}, {
               headers: { "content-type": "application/json" },
             })
             .then((resInput) => {
               if (resInput.data == "consumed") {
                 this.$root.$emit("simulationInfoAdd");
+                this.$root.$emit('bv::show::modal', 'modal-simulation', '#btnShow')
               } else {
                 this.text = resInput.data;
                 this.SnackBar = true;
@@ -86,7 +99,7 @@ export default {
           this.activeSensors.push(sensors[i].getActiveSensor());
         }
       }
-    },
+    }
   },
   watch: {
     activities: function (newActivity) {
@@ -95,4 +108,15 @@ export default {
   },
 };
 </script>
-
+<style scoped>
+.editor {
+  /* background: #ccc; */
+  /* border: 1px solid rgb(224, 224, 224); */
+  width: 100%;
+  height: 300px;
+  padding: 10px;
+  font-size: 10pt;
+  font-family: monospace;
+  line-height: 18pt;
+}
+</style>

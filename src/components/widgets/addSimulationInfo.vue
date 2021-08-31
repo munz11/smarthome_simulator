@@ -1,18 +1,6 @@
 <template>
-  <div>
-    <v-card
-      class="mx-auto"
-      width="500"
-      height="550"
-      outlined
-      elevation="2"
-      shaped
-    >
-      <div v-if="infoCard">
-        <v-card-title
-          >Please enter details for the simulation
-          <v-btn text @click="close"> &times; </v-btn></v-card-title
-        >
+  <b-modal id="modal-simulation" title="Simulation configuration" @ok="alert(1)">
+    <div v-if="infoCard">
         <v-card-text>
           <v-form v-model="isValid">
             <v-row>
@@ -44,18 +32,18 @@
                 ></v-text-field>
               </v-col>
             </v-row>
-            <v-checkbox
+            <b-form-checkbox
               v-model="instantSimulation"
-              label="Instant Simulation"
-            ></v-checkbox>
+            >Instant Simulation</b-form-checkbox>
             <v-text-field
               label="Relative Time"
               v-model="relativeTime"
-              required
+              hint="1.0"
               :rules="[
                 (v) => !!v || 'Required',
-                (v) => /^\d*$/.test(v) || 'Enter a number',
+                (v) => /^\d*\.\d{0,2}$/.test(v) || 'Enter a number with max 2 decimal places',
               ]"
+              required
             ></v-text-field>
             <v-text-field
               label="Seed"
@@ -63,10 +51,10 @@
               hint="3"
               :rules="[
                 (v) => !!v || 'Required',
-                (v) => /^\d*$/.test(v) || 'Enter a number',
+                (v) => /[123]/.test(v) || 'Enter either 0, 1 or 2',
               ]"
             ></v-text-field>
-            <v-checkbox v-model="mqttOutput" label="Mqtt Output"></v-checkbox>
+            <b-form-checkbox v-model="mqttOutput">Mqtt Output</b-form-checkbox>
             <v-row>
               <v-col>
                 <v-text-field
@@ -95,28 +83,41 @@
             </v-row>
           </v-form>
         </v-card-text>
-        <v-card-actions>
-          <v-btn outlined rounded text :disabled="!isValid" @click="submit">
-            Submit</v-btn
-          >
-        </v-card-actions>
-      </div>
-      <div v-if="!infoCard">
-        <v-card-title
-          >Server output
-          <v-btn text @click="close"> &times; </v-btn>
-        </v-card-title>
-        <v-card-text>
-          <b-form-textarea
-            :value="simulationInfo"
-            plaintext
-            rows="18"
-            max-rows="18"
-          ></b-form-textarea>
-        </v-card-text>
-      </div>
-    </v-card>
-  </div>
+    </div>
+    <div v-if="!infoCard">
+        <b-form-textarea
+          :value="simulationInfo"
+          plaintext
+          class="editor"
+        ></b-form-textarea>
+    </div>
+        <template #modal-footer>
+          <b-button
+            variant="secondary"
+            class="float-right"
+            @click="$bvModal.hide('modal-simulation')"
+            v-if="infoCard"
+          >Cancel</b-button>
+          <b-button
+            variant="primary"
+            class="float-right"
+            @click="submit"
+            v-if="infoCard"
+          >Start simulation</b-button>
+          <b-button
+            variant="secondary"
+            class="float-right"
+            @click="reset()"
+            v-if="!infoCard"
+          >Reset simulation</b-button>
+          <b-button
+            variant="primary"
+            class="float-right"
+            @click="$bvModal.hide('modal-simulation')"
+            v-if="!infoCard"
+          >Close</b-button>
+        </template>
+  </b-modal>
 </template>
 
 <script>
@@ -127,21 +128,24 @@ export default {
   name: "AddSimulationInfo",
   data: () => {
     return {
-      date: "",
-      time: "",
+      date: "2021-01-01",
+      time: "08:00:00",
       instantSimulation: false,
-      relativeTime: 1,
+      relativeTime: 0.1,
       mqttOutput: false,
       mqttHost: "broker.hivemq.com",
       mqttPort: "1883",
       rootTopic: "smartHome",
       isValid: true,
-      seed: "",
+      seed: 0,
       simulationInfo: "***  Close this card to see the visual simulation ***",
       infoCard: true,
     };
   },
   methods: {
+    reset() {
+      this.infoCard = true;
+    },
     submit() {
       this.infoCard = false;
       let dateObject = new Date();
@@ -166,8 +170,11 @@ export default {
         mqttPort: this.mqttPort,
         rootTopic: this.rootTopic,
         seed: this.seed,
+        csvOutput: false,
+        csvFileName: "test",
       };
-      this.socket = new SockJS("https://smart-home-simulator-backend.herokuapp.com/websockets");
+      // this.$bvModal.hide('modal-simulation');
+      this.socket = new SockJS("http://linac.compute.dtu.dk/websockets");
       this.stompClient = Stomp.over(this.socket);
       this.$store.commit("setVisualSimulation","true");
       this.$root.$emit("visualSimulationUpdated");
@@ -177,13 +184,19 @@ export default {
           axios
             .post(this.$smartHomeBackend.getUrlSimulation(), simulationJson)
             .then(() => {
-              setTimeout(() => {this.stompClient.disconnect(); alert("Simulation has ended."); this.$store.commit("setVisualSimulation","false"); this.$root.$emit("visualSimulationUpdated"); }, 2000);
+              setTimeout(() => {
+                this.stompClient.disconnect();
+                alert("Simulation has ended.");
+                this.$store.commit("setVisualSimulation","false");
+                this.$root.$emit("visualSimulationUpdated");
+              },
+              2000);
             })
             .catch((err) => {
               this.simulationInfo = err;
             });
           this.stompClient.subscribe("/SimulationStatus", (message) => {
-            this.simulationInfo = this.simulationInfo + "\n" + message.body;
+            this.simulationInfo = this.simulationInfo +"\n" + message.body;
             this.visual(message.body);
           });
         },
@@ -197,7 +210,7 @@ export default {
     },
     visual(messageBody) {
       this.$store.getters.agentNames.forEach((name) => {
-        if (messageBody.includes(name)) {
+        if (messageBody.includes(name) && messageBody.includes("Position")) {
           let positionStr = messageBody.substring(
             messageBody.lastIndexOf("Position") + 8
           );
@@ -214,3 +227,22 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.editor {
+  background: #333;
+  color: #ccc;
+  /* border: 1px solid rgb(224, 224, 224); */
+  width: 100%;
+  height: 300px;
+  padding: 10px;
+  font-size: 10pt;
+  font-family: monospace;
+  white-space: pre;
+  /* white-space: nowrap; will prevent the default wrapping of text to next line */
+  overflow-x: auto; /* will make horizontal scroll-bar appear only when needed */
+}
+.editor:focus {
+    outline: none !important;
+}
+</style>

@@ -1,26 +1,24 @@
 <template>
-  <div>
-    <v-card class="mx-auto" max-width="500" outlined elevation="2" shaped>
-      <v-card-title
-        >Upload or Download the FloorPlan
-        <br />
-        <v-btn text @click="close"> &times; </v-btn>
-      </v-card-title>
-      <v-card-text>
-        <v-file-input
-          accept=".json"
-          label="Select File"
-          outlined
-          v-model="File"
-        >
-        </v-file-input>
-        <v-btn outlined rounded text @click="upload"> Upload JSON</v-btn>
-        <v-btn outlined rounded text @click="download"> Download</v-btn>
-        <br />
-        {{ messageFromUpload }}
-      </v-card-text>
-    </v-card>
-  </div>
+  <b-list-group flush>
+    <b-list-group-item>
+      <p>Download the Json of the floor map</p>
+      <b-button @click="download">Download</b-button>
+    </b-list-group-item>
+    
+    <b-list-group-item>
+      <p>Upload the floor map</p>
+      <b-form-file
+        v-model="File"
+        :state="Boolean(File)"
+        accept=".json"
+        placeholder="Choose a file or drop it here..."
+        drop-placeholder="Drop file here..."
+        class="mb-2"
+      ></b-form-file>
+      <b-button @click="upload">Upload</b-button>
+      <p :v-if="messageFromUpload.length > 0">{{ messageFromUpload }}</p>
+    </b-list-group-item>
+  </b-list-group>
 </template>
 
 <script>

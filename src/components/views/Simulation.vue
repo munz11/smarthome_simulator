@@ -1,11 +1,18 @@
 <template>
-  <div class="Simulation">
-    <v-container fluid fill-height>
-      <v-row>
+  <b-row>
+    <nav
+      class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse border-right p-0">
+      <div class="sidebar-sticky pt-0">
         <SimulationMenu />
+        </div>
+    </nav>
+
+    <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4 pt-3">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Simulation configuration</h1>
+      </div>
         <Grid :editPlan="false" />
-      </v-row>
-    </v-container>
+      </main>
     <v-snackbar v-model="snackBar" timeout="-1" bottom>
       {{ text }}
       <template v-slot:action="{ attrs }">
@@ -14,10 +21,9 @@
         </v-btn>
       </template>
     </v-snackbar>
-    <v-overlay :value="simulationInfo" :light="true" :dark="false">
-      <AddSimulationInfo @simulationClose="simulationInfo = false" />
-    </v-overlay>
-  </div>
+    
+    <AddSimulationInfo @simulationClose="simulationInfo = false" />
+  </b-row>
 </template>
 
 <script>

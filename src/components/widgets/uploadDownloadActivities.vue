@@ -1,5 +1,38 @@
 <template>
-  <div>
+  <b-list-group flush>
+    <b-list-group-item>
+      <p>Download the Json of the simulation</p>
+      <b-button @click="download">Download</b-button>
+    </b-list-group-item>
+    
+    <b-list-group-item>
+      <p>Upload the simulation from Json file</p>
+      <b-form-file
+        v-model="JsonFile"
+        :state="Boolean(JsonFile)"
+        accept=".json"
+        placeholder="Choose a file or drop it here..."
+        drop-placeholder="Drop file here..."
+        class="mb-2"
+      ></b-form-file>
+      <b-button @click="uploadJSON">Upload Json file</b-button>
+    </b-list-group-item>
+    
+    <b-list-group-item>
+      <p>Upload the simulation from plain text file</p>
+      <b-form-file
+        v-model="TextFile"
+        :state="Boolean(TextFile)"
+        accept=".txt"
+        placeholder="Choose a file or drop it here..."
+        drop-placeholder="Drop file here..."
+        class="mb-2"
+      ></b-form-file>
+      <b-button @click="uploadText">Upload text file</b-button>
+      <p :v-if="messageFromUpload.length > 0">{{ messageFromUpload }}</p>
+    </b-list-group-item>
+  </b-list-group>
+  <!-- <div>
     <v-card class="mx-auto" max-width="500" outlined elevation="2" shaped>
       <v-card-title
         >Upload or Download the Activities
@@ -32,7 +65,7 @@
         {{ messageFromUpload }}
       </v-card-text>
     </v-card>
-  </div>
+  </div> -->
 </template>
 
 <script>

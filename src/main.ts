@@ -37,4 +37,4 @@ new Vue({
   render: (h: any) => h(App),
 }).$mount("#app");
 
-document.title = "Smarthome Simulator";
+document.title = "Linac - Smart Environment Simulator";

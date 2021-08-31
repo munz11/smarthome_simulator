@@ -1,10 +1,8 @@
 <template>
   <div>
-    <v-card v-resize="onResize" :height="y" :width="x">
+    <v-card v-resize="onResize" class="m-3">
       <v-list dense>
-        <v-list-item>
-          <AddInput />
-        </v-list-item>
+        <AddInput />
         <v-list-item>
           <v-text-field
             label="Filter"
@@ -15,18 +13,23 @@
         <v-list-item
           v-for="item in items"
           :key="item.title"
+          class="float-left"
           @click="executeEvent(item.eventName)"
         >
           <v-list-item-content>
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
+            <v-list-item-title><font-awesome-icon :icon=item.icon /></v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      
+      <v-list-item @click="{}" v-b-modal.modal-upload style="clear: both">
+          <v-list-item-content>
+            <v-list-item-title>
+              <font-awesome-icon icon="upload" /> Upload / Download
+            </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
-      <v-list-item @click="showUploadDownload = true">
-        <v-list-item-content>
-          <v-list-item-title>Upload / Download</v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
+      <v-divider />
       <v-list-item>
         <v-list-item-content>
           <v-list-item-subtitle class="text-wrap">{{
@@ -35,9 +38,10 @@
         </v-list-item-content>
       </v-list-item>
     </v-card>
-    <v-overlay :value="showUploadDownload" :light="true" :dark="false">
+
+    <b-modal id="modal-upload" title="Upload or download the simulation">
       <UploadDownloadActivities @closeCard="showUploadDownload = false" />
-    </v-overlay>
+    </b-modal>
   </div>
 </template>
 
@@ -50,10 +54,10 @@ export default {
   data() {
     return {
       items: [
-        { title: "Up", eventName: "gridPanUp" },
-        { title: "Down", eventName: "gridPanDown" },
-        { title: "Left", eventName: "gridPanLeft" },
-        { title: "Right", eventName: "gridPanRight" },
+        { eventName: "gridPanUp", icon: "angle-up" },
+        { eventName: "gridPanDown", icon: "angle-down" },
+        { eventName: "gridPanLeft", icon: "angle-left" },
+        { eventName: "gridPanRight", icon: "angle-right" },
       ],
       y: window.innerHeight - 57,
       x: window.innerWidth * 0.15,

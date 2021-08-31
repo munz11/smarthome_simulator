@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card class="mx-auto" width="600" outlined elevation="2" shaped>
+    <v-card class="mx-auto" width="600" outlined elevation="2">
       <v-card-title
         >Edit Sensor
         <v-btn text @click="close" right> &times; </v-btn>
@@ -28,7 +28,7 @@
               {{ option.text }}
             </option>
           </select>
-          <v-checkbox v-model="walkable" label="walkable"></v-checkbox>
+          <b-checkbox v-model="walkable">Walkable</b-checkbox>
           <v-text-field
             label="Trigger Frequency (s)"
             v-model="triggerFrequency"
